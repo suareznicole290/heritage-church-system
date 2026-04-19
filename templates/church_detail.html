@@ -1,0 +1,880 @@
+{% extends "base.html" %}
+
+{% block title %}{{ church.church_name }} — Heritage Churches of Bohol{% endblock %}
+
+{% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+  {% block nav_dashboard %}active{% endblock %}
+  {% block m_nav_dashboard %}active{% endblock %}
+{% else %}
+  {% block nav_home %}active{% endblock %}
+  {% block m_nav_home %}active{% endblock %}
+{% endif %}
+
+{% block extra_styles %}
+.breadcrumb {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 18px 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6f4a33;
+  flex-wrap: wrap;
+  line-height: 1.6;
+}
+
+.breadcrumb a {
+  color: #7a4a2a;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb span {
+  color: #8a6a54;
+}
+
+.church-hero {
+  background: var(--brown-dark);
+  background-image: none;
+  padding: 34px 1.25rem 30px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.church-hero-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.hero-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.church-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.18;
+  margin: 0;
+  word-break: break-word;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.risk-pill {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.risk-pill svg {
+  width: 14px;
+  height: 14px;
+}
+
+.risk-high   { background: #fde8e8; color: var(--red-high); }
+.risk-medium { background: #fef3cd; color: var(--yellow-med); }
+.risk-low    { background: #d4edda; color: var(--green-safe); }
+.risk-none   { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.78); }
+
+.status-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22a35a;
+  box-shadow: 0 0 0 3px rgba(34,163,90,0.18);
+}
+
+.main-layout {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.58fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.main-col,
+.sidebar {
+  min-width: 0;
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.card-title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.card-title-left svg {
+  width: 16px;
+  height: 16px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  line-height: 1.4;
+}
+
+.card-body {
+  padding: 22px;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: var(--gray-muted);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.desc-field { margin-bottom: 18px; }
+.desc-field:last-child { margin-bottom: 0; }
+
+.desc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #8a6a54;
+  margin-bottom: 6px;
+}
+
+.desc-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #3e2619;
+  font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.gallery-featured {
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px var(--shadow);
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.gallery-featured img {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.gallery-item {
+  border: 1px solid var(--parchment);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px var(--shadow);
+  min-width: 0;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-meta {
+  padding: 10px 12px;
+}
+
+.gallery-caption {
+  font-size: 12px;
+  color: var(--brown-dark);
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.gallery-sub {
+  font-size: 11px;
+  color: var(--gray-muted);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.report-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--parchment);
+}
+
+.report-item:last-child { border-bottom: none; }
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.report-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #2f1a10;
+  line-height: 1.5;
+}
+
+.damage-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #fde8e8;
+  color: var(--red-high);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.report-meta {
+  font-size: 13px;
+  color: #6a4a35;
+  margin-bottom: 8px;
+  line-height: 1.65;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+
+.report-meta svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.report-desc {
+  font-size: 14px;
+  color: #3a2115;
+  line-height: 1.75;
+  font-weight: 500;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.report-image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.report-thumb {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--parchment);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.status-chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 10px;
+  background: var(--parchment);
+  color: #6a4a35;
+}
+
+.status-chip.resolved  { background: #d4edda; color: var(--green-safe); }
+.status-chip.assessing { background: #fef3cd; color: var(--yellow-med); }
+
+.recognition-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--parchment);
+  flex-wrap: wrap;
+}
+
+.recognition-item:last-child { border-bottom: none; }
+
+.recognition-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.recog-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(201,168,76,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.recog-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.recog-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 2px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.recog-meta {
+  font-size: 11px;
+  color: var(--gray-muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.sidebar .section-card { margin-bottom: 20px; }
+
+.location-map {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--parchment);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.location-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--gray-muted);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.map-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--parchment);
+  background: #fff;
+}
+
+.map-link:hover {
+  background: var(--cream);
+  border-color: var(--gold);
+}
+
+@media (max-width: 1280px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .breadcrumb,
+  .church-hero-inner,
+  .main-layout {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .breadcrumb {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 14px;
+  }
+
+  .church-hero {
+    padding-top: 30px;
+    padding-bottom: 28px;
+  }
+
+  .hero-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery-featured img {
+    aspect-ratio: 16/9;
+  }
+
+  .card-body {
+    padding: 18px;
+  }
+
+  .card-title-bar {
+    padding: 14px 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .breadcrumb,
+  .church-hero,
+  .main-layout {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .church-hero {
+    padding-top: 24px;
+    padding-bottom: 22px;
+  }
+
+  .hero-left {
+    min-width: 0;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-featured img {
+    aspect-ratio: 16/9;
+  }
+
+  .report-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .section-card {
+    border-radius: 12px;
+  }
+
+  .card-title-bar {
+    padding: 13px 15px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .hero-tag {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+
+<div class="breadcrumb">
+  {% if is_admin_view %}
+    <a href="/dashboard">Dashboard</a>
+    <span>›</span>
+    <a href="/hazard-map">Hazard Map</a>
+    <span>›</span>
+    <span>{{ church.church_name }}</span>
+  {% else %}
+    <a href="/">Churches</a>
+    <span>›</span>
+    <span>{{ church.church_name }}</span>
+  {% endif %}
+</div>
+
+<section class="church-hero">
+  <div class="church-hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag">Heritage Church · Bohol</div>
+      <h1>{{ church.church_name }}</h1>
+    </div>
+    <div class="hero-right">
+      {% set has_high = assessments | selectattr('risk_level', 'equalto', 'High') | list %}
+      {% set has_medium = assessments | selectattr('risk_level', 'equalto', 'Medium') | list %}
+      {% if has_high %}
+        <span class="risk-pill risk-high">{{ icons.warning(14) }}<span>High Risk</span></span>
+      {% elif has_medium %}
+        <span class="risk-pill risk-medium">{{ icons.warning(14) }}<span>Medium Risk</span></span>
+      {% elif assessments %}
+        <span class="risk-pill risk-low">{{ icons.check_circle(14) }}<span>Low Risk</span></span>
+      {% else %}
+        <span class="risk-pill risk-none">Unassessed</span>
+      {% endif %}
+      <span class="status-badge">{{ church.monitoring_status }}</span>
+    </div>
+  </div>
+</section>
+
+<div class="main-layout">
+
+  <div class="main-col">
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.image_icon(16) }}
+          <span class="card-title">Church Gallery</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if images %}
+          <div class="gallery-featured">
+            <a href="{{ url_for('static', filename=images[0].image_path) }}" target="_blank">
+              <img src="{{ url_for('static', filename=images[0].image_path) }}" alt="Church featured image">
+            </a>
+          </div>
+
+          {% if images|length > 1 %}
+          <div class="gallery-grid">
+            {% for img in images[1:] %}
+            <div class="gallery-item">
+              <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank">
+                <img src="{{ url_for('static', filename=img.image_path) }}" alt="Church image">
+              </a>
+              <div class="gallery-meta">
+                <div class="gallery-caption">{{ img.image_caption or 'Church Photo' }}</div>
+                <div class="gallery-sub">
+                  {% if img.uploaded_by_name %}By {{ img.uploaded_by_name }}{% else %}Uploaded to gallery{% endif %}
+                  {% if img.uploaded_at %} · {{ img.uploaded_at }}{% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% else %}
+          <p class="empty-text">No church gallery images uploaded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.landmark(16) }}
+          <span class="card-title">Church Information & Description</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="desc-field">
+          <div class="desc-label">Municipality</div>
+          <div class="desc-text">{{ church.municipality_name }}</div>
+        </div>
+
+        <div class="desc-field">
+          <div class="desc-label">Barangay</div>
+          <div class="desc-text">{{ church.barangay }}</div>
+        </div>
+
+        {% if church.address %}
+        <div class="desc-field">
+          <div class="desc-label">Address</div>
+          <div class="desc-text">{{ church.address }}</div>
+        </div>
+        {% endif %}
+
+        {% if church.date_built %}
+        <div class="desc-field">
+          <div class="desc-label">Year Built</div>
+          <div class="desc-text">{{ church.date_built }}</div>
+        </div>
+        {% endif %}
+
+        <div class="desc-field">
+          <div class="desc-label">Monitoring Status</div>
+          <div class="desc-text">{{ church.monitoring_status }}</div>
+        </div>
+
+        {% if description %}
+          {% if description.historical_background %}
+          <div class="desc-field">
+            <div class="desc-label">Historical Background</div>
+            <div class="desc-text">{{ description.historical_background }}</div>
+          </div>
+          {% endif %}
+
+          {% if description.historical_period %}
+          <div class="desc-field">
+            <div class="desc-label">Historical Period</div>
+            <div class="desc-text">{{ description.historical_period }}</div>
+          </div>
+          {% endif %}
+
+          {% if description.cultural_significance %}
+          <div class="desc-field">
+            <div class="desc-label">Cultural Significance</div>
+            <div class="desc-text">{{ description.cultural_significance }}</div>
+          </div>
+          {% endif %}
+
+          {% if description.religious_significance %}
+          <div class="desc-field">
+            <div class="desc-label">Religious Significance</div>
+            <div class="desc-text">{{ description.religious_significance }}</div>
+          </div>
+          {% endif %}
+
+          {% if description.notable_artifacts %}
+          <div class="desc-field">
+            <div class="desc-label">Notable Artifacts</div>
+            <div class="desc-text">{{ description.notable_artifacts }}</div>
+          </div>
+          {% endif %}
+        {% else %}
+          <p class="empty-text">No historical description available yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+
+    {% if church.latitude and church.longitude %}
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.map(16) }}
+          <span class="card-title">Location</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="location-map">
+          <iframe
+            src="https://maps.google.com/maps?q={{ church.latitude }},{{ church.longitude }}&z=16&output=embed"
+            width="100%"
+            height="260"
+            style="border:0; display:block;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+
+        <div class="location-note">
+          <strong style="color:var(--brown-dark);">{{ church.church_name }}</strong><br>
+          Coordinates: {{ church.latitude }}, {{ church.longitude }}
+        </div>
+
+        <a href="https://maps.google.com/?q={{ church.latitude }},{{ church.longitude }}"
+           target="_blank"
+           class="map-link">
+          Open in Google Maps ↗
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.award(16) }}
+          <span class="card-title">Heritage Recognitions</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if recognitions %}
+          {% for r in recognitions %}
+          <div class="recognition-item">
+            <div class="recognition-left">
+              <div class="recog-icon">{{ icons.award(16) }}</div>
+              <div>
+                <div class="recog-title">{{ r.recognition_title }}</div>
+                <div class="recog-meta">
+                  {% if r.issuing_body %}{{ r.issuing_body }}{% endif %}
+                  {% if r.year_recognized %} · {{ r.year_recognized }}{% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty-text">No recognitions recorded.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.warning(16) }}
+          <span class="card-title">Hazard Risk Assessment</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if assessments %}
+          {% for a in assessments %}
+          <div class="report-item">
+            <div class="report-header">
+              <div class="report-title">{{ a.hazard_name }}</div>
+              <span class="risk-tag
+                {% if a.risk_level == 'High' %}tag-high
+                {% elif a.risk_level == 'Medium' %}tag-medium
+                {% else %}tag-low{% endif %}">
+                {{ a.risk_level }}
+              </span>
+            </div>
+            <div class="report-meta">
+              {{ icons.calendar(14) }}
+              <span>{{ a.assessment_date or '—' }}</span>
+            </div>
+            <div class="report-desc">{{ a.assessment_remarks or 'No remarks provided.' }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty-text">No hazard assessments recorded yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title-left">
+          {{ icons.reports(16) }}
+          <span class="card-title">Disaster & Damage Reports</span>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if reports %}
+          {% for r in reports %}
+          <div class="report-item">
+            <div class="report-header">
+              <div class="report-title">{{ r.hazard_name }} Incident</div>
+              {% if r.damage_level %}
+              <span class="damage-tag">{{ r.damage_level }}</span>
+              {% endif %}
+            </div>
+
+            <div class="report-meta">
+              {{ icons.calendar(14) }}
+              <span>{{ r.incident_date or r.report_date }}</span>
+            </div>
+
+            {% if r.report_description %}
+            <div class="report-desc">{{ r.report_description }}</div>
+            {% endif %}
+
+            {% if report_images_map.get(r.report_id) %}
+            <div class="report-image-list">
+              {% for img in report_images_map.get(r.report_id) %}
+              <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank">
+                <img
+                  src="{{ url_for('static', filename=img.image_path) }}"
+                  alt="Damage photo"
+                  class="report-thumb">
+              </a>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <span class="status-chip {% if r.report_status == 'Resolved' %}resolved{% elif r.report_status == 'Under Assessment' %}assessing{% endif %}">
+              {{ r.report_status }}
+            </span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty-text">No disaster reports on record for this church.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

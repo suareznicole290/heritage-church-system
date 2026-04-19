@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}About — Heritage Churches of Bohol{% endblock %}
+
+{% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+{% else %}
+  {% block nav_about %}active{% endblock %}
+  {% block m_nav_about %}active{% endblock %}
+{% endif %}
+
+{% block extra_styles %}
+.hero {
+  background-color: var(--brown-dark);
+  background-image: none;
+  padding: 56px 1.25rem 52px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+}
+
+.hero-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 5px 16px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.hero p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.72);
+  max-width: 820px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 16px 60px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 16px;
+  box-shadow: 0 3px 12px var(--shadow);
+  overflow: hidden;
+}
+
+.card-title-bar {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  line-height: 1.3;
+}
+
+.card-body {
+  padding: 24px 22px;
+}
+
+.card-body p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--brown-mid);
+  margin-bottom: 16px;
+}
+
+.card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.feature-list {
+  display: grid;
+  gap: 12px;
+}
+
+.feature-item {
+  background: var(--cream);
+  border: 1px solid var(--parchment);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.feature-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.feature-desc {
+  font-size: 13px;
+  color: var(--gray-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 1280px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+
+  .hero-inner,
+  .main-content {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .main-content {
+    padding: 24px 0 40px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero,
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .card-body {
+    padding: 18px;
+  }
+
+  .card-title-bar {
+    padding: 14px 18px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      {% if is_admin_view %}Administrative Overview{% else %}System Overview{% endif %}
+    </div>
+    <h1>About the Heritage Churches of Bohol System</h1>
+    <p>
+      {% if is_admin_view %}
+        This platform supports heritage documentation, disaster monitoring, and risk-informed administrative decision-making for significant churches across Bohol.
+      {% else %}
+        This platform was developed to support heritage documentation, disaster monitoring,
+        and risk-informed decision-making for significant churches across Bohol. It serves
+        as a centralized information system for preserving cultural heritage while improving
+        disaster preparedness and public awareness.
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<main class="main-content">
+  <div class="content-grid">
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title">Project Purpose</div>
+      </div>
+      <div class="card-body">
+        <p>
+          The Heritage Churches of Bohol — DRRM Information System was designed to help
+          organize and manage important data related to heritage churches in the province.
+          It combines cultural documentation with disaster risk reduction and management
+          functions in one accessible platform.
+        </p>
+        <p>
+          Through this system, users can view church profiles, monitor hazard-related
+          information, browse public disaster reports, and access mapped church locations.
+          Administrators can also maintain records such as descriptions, heritage
+          recognitions, hazard assessments, image galleries, and incident reports.
+        </p>
+        <p>
+          The system aims to strengthen preservation efforts by making heritage information
+          easier to document, update, analyze, and share with both authorized users and
+          the public.
+        </p>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        <div class="card-title">Core Features</div>
+      </div>
+      <div class="card-body">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-title">Church Records</div>
+            <div class="feature-desc">Maintain church profiles, location details, and monitoring status.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">Hazard Mapping</div>
+            <div class="feature-desc">Visualize churches on an interactive map with risk-based filtering.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">Disaster Reports</div>
+            <div class="feature-desc">Track incidents, descriptions, statuses, and supporting photos.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">Heritage Documentation</div>
+            <div class="feature-desc">Store descriptions, significance, recognitions, and image galleries.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">Administrative Monitoring</div>
+            <div class="feature-desc">Support role-based access, audit logging, and record management.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

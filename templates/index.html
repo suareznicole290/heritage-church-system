@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}Heritage Churches of Bohol — DRRM Information System{% endblock %}
+
+{% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+{% else %}
+  {% block nav_home %}active{% endblock %}
+  {% block m_nav_home %}active{% endblock %}
+{% endif %}
+
+{% block extra_styles %}
+.hero {
+  background-color: var(--brown-dark);
+  background-image: none;
+  padding: 56px 1.25rem 38px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+}
+
+.hero-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.hero h1 span {
+  color: var(--gold-light);
+}
+
+.hero p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.72);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 16px 60px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.section-title span {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gray-muted);
+  margin-left: 8px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  width: 260px;
+  flex: 1 1 260px;
+}
+
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--gray-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 9px 14px 9px 36px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--brown-dark);
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 42px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+
+.filter-select {
+  padding: 9px 14px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--brown-dark);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 42px;
+  flex: 1 1 170px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+
+.churches-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.church-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.25s, transform 0.25s;
+  animation: fadeUp 0.4s ease both;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 10px var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.church-card:hover {
+  box-shadow: 0 8px 28px var(--shadow);
+  transform: translateY(-3px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-header-bar {
+  height: 5px;
+  background: var(--parchment);
+}
+
+.card-header-bar.risk-high   { background: linear-gradient(90deg, var(--red-high), #c0392b); }
+.card-header-bar.risk-medium { background: linear-gradient(90deg, var(--yellow-med), #e6ac00); }
+.card-header-bar.risk-low    { background: linear-gradient(90deg, var(--green-safe), #27ae60); }
+.card-header-bar.risk-none   { background: var(--parchment); }
+
+.card-main {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  min-height: 220px;
+}
+
+.card-image-wrap {
+  position: relative;
+  background: var(--cream);
+  border-right: 1px solid var(--parchment);
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(201,168,76,0.08), rgba(95,56,38,0.10));
+  color: var(--brown-mid);
+}
+
+.card-image-placeholder svg {
+  width: 56px;
+  height: 56px;
+  opacity: 0.75;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-body {
+  padding: 20px 22px 18px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.church-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 21px;
+  font-weight: 700;
+  color: #2f1a10;
+  line-height: 1.25;
+  flex: 1;
+}
+
+.risk-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.badge-high   { background: #fde8e8; color: var(--red-high); }
+.badge-medium { background: #fef3cd; color: var(--yellow-med); }
+.badge-low    { background: #d4edda; color: var(--green-safe); }
+.badge-none   { background: #e8dcc7; color: #6a4a35; border: 1px solid #d6c2a4; }
+
+.church-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: #5a3a2a;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.meta-row svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #7b573f
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  background: var(--cream);
+  border-top: 1px solid var(--parchment);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1f6b3a;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.status-dot::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22a35a;
+  box-shadow: 0 0 0 3px rgba(34,163,90,0.18);
+  flex-shrink: 0;
+}
+
+.view-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b4c2f;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-link:hover {
+  color: #b45a2b;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--gray-muted);
+}
+
+.empty-icon {
+  color: var(--brown-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.empty-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.empty-state h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--brown-mid);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1280px) {
+  .churches-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-top: 44px;
+    padding-bottom: 30px;
+  }
+
+  .hero-inner,
+  .main-content {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .section-header {
+    align-items: stretch;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap,
+  .filter-select {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .card-main {
+    grid-template-columns: 1fr;
+  }
+
+  .card-image-wrap {
+    border-right: none;
+    border-bottom: 1px solid var(--parchment);
+  }
+
+  .card-image,
+  .card-image-placeholder {
+    min-height: 210px;
+  }
+
+  .main-content {
+    padding: 24px 0 40px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero,
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Monitoring & Protecting<br><span>Heritage Churches in Bohol</span></h1>
+    <p>
+      {% if is_admin_view %}
+      Monitor heritage churches, disaster reports, and hazard risk information across Bohol.
+      {% else %}
+      A centralized data-driven platform for heritage documentation, disaster monitoring, and risk management of Bohol's heritage churches.
+      {% endif %}
+    </p>
+  </div>
+</section>
+
+<main class="main-content">
+
+  <div class="section-header">
+    <h2 class="section-title">
+      Heritage Churches
+      <span>{{ churches | length }} records</span>
+    </h2>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        {{ icons.search(14) }}
+        <input class="search-input" type="text" id="searchInput" placeholder="Search churches...">
+      </div>
+      <select class="filter-select" id="riskFilter" onchange="filterCards()">
+        <option value="">All Risk Levels</option>
+        <option value="High">High Risk</option>
+        <option value="Medium">Medium Risk</option>
+        <option value="Low">Low Risk</option>
+      </select>
+    </div>
+  </div>
+
+  {% if churches %}
+  <div class="churches-grid" id="churchGrid">
+    {% for church in churches %}
+    <a class="church-card"
+       href="/church/{{ church.church_id }}"
+       data-name="{{ church.church_name | lower }}"
+       data-municipality="{{ church.municipality_name | lower }}"
+       data-risk="{{ church.highest_risk or '' }}"
+       style="animation-delay: {{ loop.index0 * 0.05 }}s">
+
+      <div class="card-header-bar
+        {% if church.highest_risk == 'High' %}risk-high
+        {% elif church.highest_risk == 'Medium' %}risk-medium
+        {% elif church.highest_risk == 'Low' %}risk-low
+        {% else %}risk-none{% endif %}">
+      </div>
+
+      <div class="card-main">
+        <div class="card-image-wrap">
+          {% if church.image_path %}
+            <img
+              class="card-image"
+              src="{{ url_for('static', filename=church.image_path) }}"
+              alt="{{ church.church_name }}">
+          {% else %}
+            <div class="card-image-placeholder">
+              {{ icons.church(56) }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="card-content">
+          <div class="card-body">
+            <div class="card-top">
+              <div class="church-name">{{ church.church_name }}</div>
+              {% if church.highest_risk %}
+              <span class="risk-badge
+                {% if church.highest_risk == 'High' %}badge-high
+                {% elif church.highest_risk == 'Medium' %}badge-medium
+                {% else %}badge-low{% endif %}">
+                {{ church.highest_risk }} Risk
+              </span>
+              {% else %}
+              <span class="risk-badge badge-none">Unassessed</span>
+              {% endif %}
+            </div>
+
+            <div class="church-meta">
+              <div class="meta-row">
+                {{ icons.location(14) }}
+                <span>{{ church.municipality_name }}, Bohol</span>
+              </div>
+              <div class="meta-row">
+                {{ icons.building(14) }}
+                <span>Barangay {{ church.barangay }}</span>
+              </div>
+              {% if church.date_built %}
+              <div class="meta-row">
+                {{ icons.calendar(14) }}
+                <span>Est. {{ church.date_built }}</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <span class="status-dot">{{ church.monitoring_status }}</span>
+            <span class="view-link">View Details →</span>
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">{{ icons.church(48) }}</div>
+    <h3>No churches found</h3>
+    <p>No heritage church records are available yet.</p>
+  </div>
+  {% endif %}
+
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const riskFilter = document.getElementById('riskFilter');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', filterCards);
+  }
+
+  function filterCards() {
+    const query = searchInput.value.toLowerCase().trim();
+    const risk = riskFilter.value;
+    const cards = document.querySelectorAll('.church-card');
+
+    cards.forEach(card => {
+      const name = card.dataset.name || '';
+      const muni = card.dataset.municipality || '';
+      const cRisk = card.dataset.risk || '';
+
+      const matchesSearch = name.includes(query) || muni.includes(query);
+      const matchesRisk = !risk || cRisk === risk;
+
+      card.style.display = (matchesSearch && matchesRisk) ? 'block' : 'none';
+    });
+  }
+</script>
+{% endblock %}

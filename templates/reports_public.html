@@ -1,0 +1,918 @@
+{% extends "base.html" %}
+
+{% block title %}Disaster Reports — Heritage Churches of Bohol{% endblock %}
+
+{% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+{% else %}
+  {% block nav_public_reports %}active{% endblock %}
+  {% block m_nav_public_reports %}active{% endblock %}
+{% endif %}
+
+{% block extra_styles %}
+.hero {
+  background-color: var(--brown-dark);
+  background-image:
+    radial-gradient(ellipse at 10% 80%, rgba(193,68,14,0.2) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 10%, rgba(201,168,76,0.15) 0%, transparent 50%);
+  padding: 44px 1.25rem 34px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 5px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.18;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.68);
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.hero-inner {
+  width: min(1600px, calc(100vw - 48px));
+  margin: 0 auto;
+}
+
+.main-content {
+  width: min(1600px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.top-split {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.82fr) minmax(0, 1.18fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.left-side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.right-side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.reports-head-card,
+.report-submit-card,
+.reports-shell {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px var(--shadow);
+  overflow: hidden;
+}
+
+.reports-head-card {
+  padding: 20px;
+}
+
+.section-header {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.section-title span {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-muted);
+  margin-left: 8px;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--gray-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 9px 14px 9px 36px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--brown-dark);
+  width: 100%;
+  min-height: 42px;
+}
+
+.filter-select {
+  padding: 9px 14px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--brown-dark);
+  cursor: pointer;
+  min-height: 42px;
+  width: 100%;
+}
+
+.search-input:focus,
+.filter-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+}
+
+.report-submit-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+}
+
+.report-submit-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.report-submit-body {
+  padding: 20px;
+}
+
+.public-report-form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--brown-dark);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 10px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background: #a93a0c;
+  transform: translateY(-1px);
+}
+
+.reports-accordion {
+  display: grid;
+}
+
+.report-card {
+  border-bottom: 1px solid var(--parchment);
+  background: #fff;
+}
+
+.report-card:last-child {
+  border-bottom: none;
+}
+
+.report-toggle {
+  width: 100%;
+  border: none;
+  background: #fff;
+  text-align: left;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.report-toggle:hover {
+  background: #fdfaf6;
+}
+
+.report-toggle-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.report-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.report-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  line-height: 1.3;
+}
+
+.report-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: #6a5547;
+  line-height: 1.55;
+  flex-wrap: wrap;
+}
+
+.meta-row svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #7b573f;
+}
+
+.report-toggle-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badge-reported { background: #fde8e8; color: var(--terracotta); }
+.badge-assessment { background: #fef3cd; color: var(--yellow-med); }
+.badge-resolved { background: #d4edda; color: var(--green-safe); }
+
+.damage-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: rgba(155,32,32,0.10);
+  color: var(--red-high);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.toggle-chevron {
+  font-size: 18px;
+  color: var(--brown-mid);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.report-card.open .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.report-panel {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--parchment);
+  background: #fffdfa;
+}
+
+.report-card.open .report-panel {
+  display: block;
+}
+
+.report-panel-inner {
+  padding-top: 16px;
+}
+
+.panel-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a6a54;
+  margin-bottom: 6px;
+}
+
+.panel-text {
+  font-size: 14px;
+  color: var(--brown-dark);
+  line-height: 1.75;
+  margin-bottom: 14px;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.report-main-image {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--parchment);
+  box-shadow: 0 2px 8px var(--shadow);
+  background: #fff;
+  display: block;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.report-thumbs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.report-thumb {
+  width: 68px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--parchment);
+  box-shadow: 0 2px 8px var(--shadow);
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.report-thumb:hover {
+  transform: scale(1.04);
+  border-color: var(--gold);
+}
+
+.report-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--parchment);
+}
+
+.church-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  text-decoration: none;
+}
+
+.church-link:hover {
+  color: var(--terracotta);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px 20px;
+  color: var(--gray-muted);
+}
+
+.empty-icon {
+  color: var(--brown-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.empty-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.empty-state h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--brown-mid);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  line-height: 1.6;
+}
+
+.no-results {
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--gray-muted);
+  font-size: 13px;
+  font-style: italic;
+  display: none;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 12, 8, 0.82);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 2000;
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox-content {
+  max-width: 92vw;
+  max-height: 88vh;
+  position: relative;
+}
+
+.lightbox img {
+  max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  display: block;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--brown-dark);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+@media (max-width: 980px) {
+  .top-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .hero {
+    padding-top: 40px;
+    padding-bottom: 32px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-toggle {
+    flex-direction: column;
+  }
+
+  .report-toggle-right {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero,
+  .main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .report-header,
+  .report-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .report-toggle {
+    padding: 16px;
+  }
+
+  .report-panel {
+    padding: 0 16px 18px;
+  }
+
+  .report-main-image {
+    max-width: 100%;
+  }
+
+  .lightbox {
+    padding: 14px;
+  }
+
+  .lightbox-close {
+    top: -10px;
+    right: -6px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+
+<section class="hero">
+  <div class="hero-eyebrow">
+    {% if is_admin_view %}Administrative Monitoring Feed{% else %}Public Monitoring Feed{% endif %}
+  </div>
+  <h1>Disaster Reports for Heritage Churches</h1>
+  <p>
+    {% if is_admin_view %}
+      Review submitted disaster and damage reports affecting heritage churches, including hazard type, status, location, and related photo documentation.
+    {% else %}
+      Browse submitted disaster and damage reports affecting heritage churches across Bohol.
+    {% endif %}
+  </p>
+</section>
+
+<main class="main-content">
+  <div class="top-split">
+
+    <div class="left-side">
+      <div class="reports-head-card">
+        <div class="section-header">
+          <h2 class="section-title">
+            Disaster Reports
+            <span>{{ reports|length }} records</span>
+          </h2>
+
+          <div class="filter-bar">
+            <div class="search-wrap">
+              {{ icons.search(14) }}
+              <input class="search-input" type="text" id="searchInput" placeholder="Search church or municipality...">
+            </div>
+
+            <select class="filter-select" id="municipalityFilter" onchange="filterReports()">
+              <option value="">All Municipalities</option>
+              {% for m in municipalities %}
+              <option value="{{ m.municipality_name }}">{{ m.municipality_name }}</option>
+              {% endfor %}
+            </select>
+
+            <select class="filter-select" id="hazardFilter" onchange="filterReports()">
+              <option value="">All Hazards</option>
+              {% for h in hazard_types %}
+              <option value="{{ h.hazard_name }}">{{ h.hazard_name }}</option>
+              {% endfor %}
+            </select>
+
+            <select class="filter-select" id="statusFilter" onchange="filterReports()">
+              <option value="">All Statuses</option>
+              <option value="Reported">Reported</option>
+              <option value="Under Assessment">Under Assessment</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-submit-card">
+        <div class="report-submit-header">
+          <div class="report-submit-title">Submit a Public Report</div>
+        </div>
+        <div class="report-submit-body">
+          <form method="POST" action="/submit-public-report" enctype="multipart/form-data" class="public-report-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Church</label>
+                <select class="form-input" name="church_id" required>
+                  <option value="">Select church</option>
+                  {% for church in churches %}
+                  <option value="{{ church.church_id }}">{{ church.church_name }} — {{ church.municipality_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Hazard Type</label>
+                <select class="form-input" name="hazard_type_id" required>
+                  <option value="">Select hazard</option>
+                  {% for h in hazard_types %}
+                  <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Incident Date</label>
+                <input class="form-input" type="date" name="incident_date">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Damage Level</label>
+                <select class="form-input" name="damage_level">
+                  <option value="">Select damage level</option>
+                  <option value="Minor">Minor</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Major">Major</option>
+                  <option value="Destroyed">Destroyed</option>
+                </select>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" name="report_description" rows="5" required placeholder="Describe what happened..."></textarea>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Upload Photo(s)</label>
+                <input class="form-input" type="file" name="report_images" accept="image/*" multiple>
+              </div>
+
+              <div class="form-group full">
+                <button type="submit" class="btn-primary">Submit Report</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-side">
+      {% if reports %}
+      <div class="reports-shell">
+        <div class="reports-accordion" id="reportsGrid">
+          {% for report in reports %}
+          <div
+            class="report-card"
+            data-church="{{ report.church_name|lower }}"
+            data-municipality="{{ report.municipality_name|lower }}"
+            data-hazard="{{ report.hazard_name }}"
+            data-status="{{ report.report_status }}">
+
+            <button class="report-toggle" type="button" onclick="toggleReport(this)">
+              <div class="report-toggle-left">
+                <div class="report-title-row">
+                  <div class="report-title">{{ report.church_name }}</div>
+                </div>
+
+                <div class="report-meta">
+                  <div class="meta-row">
+                    {{ icons.location(14) }}
+                    <span>{{ report.municipality_name }}, Bohol</span>
+                  </div>
+                  <div class="meta-row">
+                    {{ icons.building(14) }}
+                    <span>Barangay {{ report.barangay or '—' }}</span>
+                  </div>
+                  <div class="meta-row">
+                    {{ icons.warning(14) }}
+                    <span>{{ report.hazard_name }}</span>
+                  </div>
+                  <div class="meta-row">
+                    {{ icons.calendar(14) }}
+                    <span>{{ report.incident_date or report.report_date }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="report-toggle-right">
+                <span class="status-badge
+                  {% if report.report_status == 'Resolved' %}badge-resolved
+                  {% elif report.report_status == 'Under Assessment' %}badge-assessment
+                  {% else %}badge-reported{% endif %}">
+                  {{ report.report_status }}
+                </span>
+
+                {% if report.damage_level %}
+                <span class="damage-pill">{{ report.damage_level }} Damage</span>
+                {% endif %}
+
+                <span class="toggle-chevron">⌄</span>
+              </div>
+            </button>
+
+            <div class="report-panel">
+              <div class="report-panel-inner">
+                <div class="panel-label">Description</div>
+                <div class="panel-text">{{ report.report_description }}</div>
+
+                {% if report_images_map.get(report.report_id) %}
+                  {% set images = report_images_map.get(report.report_id) %}
+                  <img
+                    class="report-main-image"
+                    src="{{ url_for('static', filename=images[0].image_path) }}"
+                    alt="Report image"
+                    onclick="openLightbox('{{ url_for('static', filename=images[0].image_path) }}')">
+
+                  {% if images|length > 1 %}
+                  <div class="report-thumbs">
+                    {% for img in images %}
+                    <img
+                      class="report-thumb"
+                      src="{{ url_for('static', filename=img.image_path) }}"
+                      alt="Report thumbnail"
+                      onclick="openLightbox('{{ url_for('static', filename=img.image_path) }}')">
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                {% endif %}
+
+                <div class="report-footer">
+                  <a class="church-link" href="/church/{{ report.church_id }}">View church details →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="no-results" id="noResultsMessage">No reports match the selected filters.</div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">{{ icons.reports(48) }}</div>
+        <h3>No reports found</h3>
+        <p>No public disaster reports are available yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-content">
+    <button class="lightbox-close" type="button" onclick="closeLightboxButton()">×</button>
+    <img id="lightboxImage" src="" alt="Expanded report image">
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const searchInput = document.getElementById('searchInput');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', filterReports);
+  }
+
+  function toggleReport(button) {
+    const card = button.closest('.report-card');
+    card.classList.toggle('open');
+  }
+
+  function filterReports() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const municipality = document.getElementById('municipalityFilter').value;
+    const hazard = document.getElementById('hazardFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const cards = document.querySelectorAll('.report-card');
+    const noResults = document.getElementById('noResultsMessage');
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const church = card.dataset.church || '';
+      const muni = card.dataset.municipality || '';
+      const cardHazard = card.dataset.hazard || '';
+      const cardStatus = card.dataset.status || '';
+
+      const matchesSearch = church.includes(query) || muni.includes(query);
+      const matchesMunicipality = !municipality || card.dataset.municipality === municipality.toLowerCase();
+      const matchesHazard = !hazard || cardHazard === hazard;
+      const matchesStatus = !status || cardStatus === status;
+
+      const show = matchesSearch && matchesMunicipality && matchesHazard && matchesStatus;
+      card.style.display = show ? '' : 'none';
+
+      if (show) visibleCount++;
+    });
+
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+
+  function openLightbox(imageSrc) {
+    document.getElementById('lightboxImage').src = imageSrc;
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(event) {
+    if (event.target.id === 'lightbox') {
+      document.getElementById('lightbox').classList.remove('active');
+      document.getElementById('lightboxImage').src = '';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function closeLightboxButton() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.getElementById('lightboxImage').src = '';
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeLightboxButton();
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}All Reports — Heritage Churches of Bohol{% endblock %}
+
+{% block nav_reports %}active{% endblock %}
+{% block m_nav_reports %}active{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+  background: var(--brown-dark);
+  background-image: none;
+  padding: 32px 1.25rem 28px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.page-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.25;
+}
+
+.page-title svg {
+  width: 24px;
+  height: 24px;
+  color: var(--gold-light);
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 16px 20px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.search-input,
+.filter-select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--brown-dark);
+  min-height: 42px;
+}
+
+.search-input {
+  width: 240px;
+  flex: 1 1 240px;
+  min-width: 220px;
+}
+
+.filter-select {
+  flex: 1 1 180px;
+  min-width: 170px;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-title-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.card-title-left svg {
+  width: 16px;
+  height: 16px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.card-count {
+  font-size: 11px;
+  color: var(--gray-muted);
+  background: var(--parchment);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.reports-accordion {
+  display: grid;
+}
+
+.report-card {
+  border-bottom: 1px solid var(--parchment);
+  background: #fff;
+}
+
+.report-card:last-child {
+  border-bottom: none;
+}
+
+.report-toggle {
+  width: 100%;
+  border: none;
+  background: #fff;
+  text-align: left;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.report-toggle:hover {
+  background: #fdfaf6;
+}
+
+.report-toggle-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.report-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.report-church-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  line-height: 1.3;
+}
+
+.report-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-meta-line {
+  font-size: 13px;
+  color: #6a5547;
+  line-height: 1.55;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.report-meta-line svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #7b573f;
+}
+
+.report-toggle-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.8px;
+}
+
+.status-reported  { background: #f6e2dc; color: #c65422; }
+.status-assessing { background: #fde8e8; color: var(--terracotta); }
+.status-resolved  { background: #d4edda; color: var(--green-safe); }
+
+.damage-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  background: #f3e3df;
+  color: #b33d2f;
+  white-space: nowrap;
+  letter-spacing: 0.6px;
+}
+
+.toggle-chevron {
+  font-size: 18px;
+  color: var(--brown-mid);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.report-card.open .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.report-panel {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--parchment);
+  background: #fffdfa;
+}
+
+.report-card.open .report-panel {
+  display: block;
+}
+
+.report-panel-inner {
+  padding-top: 16px;
+}
+
+.panel-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a6a54;
+  margin-bottom: 6px;
+}
+
+.panel-text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #3e2619;
+  font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--gray-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.no-results {
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--gray-muted);
+  font-size: 13px;
+  font-style: italic;
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .page-header-inner {
+    align-items: flex-start;
+  }
+
+  .report-toggle {
+    flex-direction: column;
+  }
+
+  .report-toggle-right {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 22px;
+  }
+
+  .page-header {
+    padding: 24px 1rem 22px;
+  }
+
+  .page-header-inner,
+  .main-content {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input,
+  .filter-select {
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .card-title-bar {
+    padding: 14px 16px;
+  }
+
+  .main-content {
+    padding: 20px 0 18px;
+  }
+
+  .report-church-name {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header,
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .page-header {
+    padding-top: 26px;
+    padding-bottom: 22px;
+  }
+
+  .main-content {
+    padding-top: 24px;
+  }
+
+  .section-card {
+    border-radius: 12px;
+  }
+
+  .report-toggle {
+    padding: 16px;
+  }
+
+  .report-panel {
+    padding: 0 16px 18px;
+  }
+
+  .empty-state {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-title svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .report-church-name {
+    font-size: 17px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title">{{ icons.reports(24) }}<span>Disaster & Damage Reports</span></div>
+      <div class="page-subtitle">
+        {% if session['role_name'] == 'Super Admin' %}
+          All reported incidents across heritage churches
+        {% else %}
+          Reported incidents within your assigned municipality
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="main-content">
+
+  <div class="filter-bar">
+    <input class="search-input" type="text" id="searchInput" placeholder="Search church or hazard..." onkeyup="filterReports()">
+    <select class="filter-select" id="statusFilter" onchange="filterReports()">
+      <option value="">All Statuses</option>
+      <option value="Reported">Reported</option>
+      <option value="Under Assessment">Under Assessment</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+    <select class="filter-select" id="damageFilter" onchange="filterReports()">
+      <option value="">All Damage Levels</option>
+      <option value="Minor">Minor</option>
+      <option value="Moderate">Moderate</option>
+      <option value="Major">Major</option>
+      <option value="Destroyed">Destroyed</option>
+    </select>
+  </div>
+
+  <div class="section-card">
+    <div class="card-title-bar">
+      <div class="card-title-left">
+        {{ icons.reports(16) }}
+        <span class="card-title">Submitted Reports</span>
+        <span class="card-count">{{ reports|length }}</span>
+      </div>
+    </div>
+
+    {% if reports %}
+    <div class="reports-accordion" id="reportsAccordion">
+      {% for r in reports %}
+      <div
+        class="report-card"
+        data-search="{{ (r.church_name ~ ' ' ~ r.hazard_name ~ ' ' ~ (r.report_description or '') ~ ' ' ~ (r.municipality_name or '')) | lower }}"
+        data-status="{{ (r.report_status or '') | lower }}"
+        data-damage="{{ (r.damage_level or 'n/a') | lower }}"
+      >
+        <button class="report-toggle" type="button" onclick="toggleReport(this)">
+          <div class="report-toggle-left">
+            <div class="report-title-row">
+              <div class="report-church-name">{{ r.church_name }}</div>
+            </div>
+
+            <div class="report-meta">
+              <div class="report-meta-line">
+                {{ icons.location(14) }}
+                <span>{{ r.municipality_name }}, Bohol</span>
+              </div>
+              <div class="report-meta-line">
+                {{ icons.warning(14) }}
+                <span>{{ r.hazard_name }}</span>
+              </div>
+              <div class="report-meta-line">
+                {{ icons.calendar(14) }}
+                <span>{{ r.report_date }}</span>
+              </div>
+              <div class="report-meta-line">
+                {{ icons.users(14) }}
+                <span>{{ r.reported_by_name or 'Unknown' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-toggle-right">
+            <span class="status-badge
+              {% if r.report_status == 'Resolved' %}status-resolved
+              {% elif r.report_status == 'Under Assessment' %}status-assessing
+              {% else %}status-reported{% endif %}">
+              {{ r.report_status }}
+            </span>
+
+            <span class="damage-badge">
+              {{ r.damage_level or 'N/A' }}
+            </span>
+
+            <span class="toggle-chevron">⌄</span>
+          </div>
+        </button>
+
+        <div class="report-panel">
+          <div class="report-panel-inner">
+            <div class="panel-grid">
+              <div>
+                <div class="panel-label">Description</div>
+                <div class="panel-text">{{ r.report_description or 'No description provided.' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="no-results" id="noResultsMessage">No reports match the selected filters.</div>
+    {% else %}
+    <div class="empty-state">No reports found.</div>
+    {% endif %}
+  </div>
+
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleReport(button) {
+    const card = button.closest('.report-card');
+    card.classList.toggle('open');
+  }
+
+  function filterReports() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+    const statusValue = document.getElementById('statusFilter').value.toLowerCase();
+    const damageValue = document.getElementById('damageFilter').value.toLowerCase();
+    const cards = document.querySelectorAll('.report-card');
+    const noResults = document.getElementById('noResultsMessage');
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const searchText = card.dataset.search || '';
+      const statusText = card.dataset.status || '';
+      const damageText = card.dataset.damage || '';
+
+      const matchesSearch = !searchValue || searchText.includes(searchValue);
+      const matchesStatus = !statusValue || statusText.includes(statusValue);
+      const matchesDamage = !damageValue || damageText.includes(damageValue);
+
+      const show = matchesSearch && matchesStatus && matchesDamage;
+      card.style.display = show ? '' : 'none';
+
+      if (show) visibleCount++;
+    });
+
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Login — Heritage Churches of Bohol{% endblock %}
+
+{% block extra_styles %}
+
+/* Hide header/footer for login page */
+.site-header,
+.site-footer,
+.flash-container {
+  display: none !important;
+}
+
+/* 🔥 NEW BACKGROUND (Preview B style, NO orange shine) */
+body {
+  background-color: #1f0e07;
+  background-image:
+    radial-gradient(circle at 50% 40%, rgba(120, 60, 30, 0.35), transparent 60%),
+    radial-gradient(circle at 80% 10%, rgba(201,168,76,0.08), transparent 50%),
+    radial-gradient(circle at 20% 90%, rgba(193,68,14,0.08), transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* KEEP EVERYTHING BELOW SAME */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.logo-group-login {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+  text-decoration: none;
+}
+
+.logo-icon-login {
+  width: 44px;
+  height: 44px;
+  background: var(--gold);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brown-dark);
+}
+
+.logo-icon-login svg {
+  width: 22px;
+  height: 22px;
+}
+
+.logo-text-login {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title-login {
+  font-family: 'Merriweather', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.logo-sub-login {
+  font-size: 11px;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border-top: 4px solid var(--gold);
+}
+
+.card-heading {
+  font-family: 'Merriweather', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 6px;
+}
+
+.card-sub {
+  font-size: 13px;
+  color: var(--gray-muted);
+  margin-bottom: 28px;
+}
+
+.flash {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.flash.error   { background: #fde8e8; color: #9B2020; border: 1px solid #f5c6c6; }
+.flash.warning { background: #fef3cd; color: #B07D10; border: 1px solid #f0d080; }
+.flash.success { background: #d4edda; color: #2E6B4F; border: 1px solid #b8ddc8; }
+.flash.info    { background: #e8f4fd; color: #1a6e9e; border: 1px solid #b8daf0; }
+
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-muted);
+  margin-bottom: 7px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--brown-dark);
+  background: #fff;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .form-input {
+  padding-right: 76px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown-mid);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.btn-login:hover {
+  background: var(--terra-soft);
+}
+
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--gold-light);
+}
+
+.login-footer {
+  margin-top: 28px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+}
+
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<div class="login-page">
+
+  <a href="/" class="logo-group-login">
+    <div class="logo-icon-login">{{ icons.church(22) }}</div>
+    <div class="logo-text-login">
+      <span class="logo-title-login">Heritage Churches of Bohol</span>
+      <span class="logo-sub-login">DRRM Information System</span>
+    </div>
+  </a>
+
+  <div class="login-card">
+    <div class="card-heading">Staff Login</div>
+    <div class="card-sub">Sign in to access the admin panel</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if error %}
+      <div class="flash error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-wrap">
+          <input class="form-input" type="password" id="password" name="password" required>
+          <button type="button" class="password-toggle" onclick="togglePassword('password', this)">Show</button>
+        </div>
+      </div>
+
+      <button class="btn-login" type="submit">Sign In</button>
+    </form>
+  </div>
+
+  <a href="/" class="back-link">Back to Church List</a>
+
+  <div class="login-footer">
+    Province of Bohol · Disaster Risk Reduction and Management Office
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}User Management — Heritage Churches of Bohol{% endblock %}
+
+{% block nav_users %}active{% endblock %}
+{% block m_nav_users %}active{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title">{{ icons.users(24) }}<span>User Management</span></div>
+      <div class="page-subtitle">Manage system accounts and permissions</div>
+    </div>
+    <button class="btn-primary" onclick="openAddModal()">
+      {{ icons.plus(14) }} Add User
+    </button>
+  </div>
+</section>
+
+<main class="main-content">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+```
+<tbody>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.full_name }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ u.role_name }}</td>
+    <td>{{ u.account_status }}</td>
+
+    <td>
+      {% if u.user_id != session['user_id'] %}
+
+      <!-- Toggle -->
+      <form method="POST" action="/admin/users/toggle/{{ u.user_id }}" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">
+          {% if u.account_status == 'active' %}Deactivate{% else %}Activate{% endif %}
+        </button>
+      </form>
+
+      <!-- Delete (FIXED) -->
+      <form method="POST"
+            action="/admin/users/delete/{{ u.user_id }}"
+            onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.');"
+            style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Delete</button>
+      </form>
+
+      {% else %}
+      <span>You</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+```
+
+  </table>
+</main>
+
+<!-- ADD USER MODAL -->
+
+<div id="addUserModal" class="modal-overlay">
+  <div class="modal-box">
+    <form method="POST" action="/admin/users/add">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+```
+  <input type="text" name="full_name" placeholder="Full Name" required>
+  <input type="text" name="username" placeholder="Username" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Password" required>
+
+  <select name="role_id" required>
+    {% for r in roles %}
+    <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Add User</button>
+</form>
+```
+
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+
+<div id="editUserModal" class="modal-overlay">
+  <div class="modal-box">
+    <form method="POST" id="editUserForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+```
+  <input type="text" name="full_name" id="edit_full_name" required>
+  <input type="text" name="username" id="edit_username" required>
+  <input type="email" name="email" id="edit_email" required>
+  <input type="password" name="password" id="edit_password">
+
+  <select name="role_id" id="edit_role_id" required>
+    {% for r in roles %}
+    <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="account_status" id="edit_account_status">
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+  </select>
+
+  <button type="submit">Save</button>
+</form>
+```
+
+  </div>
+</div>
+
+{% endblock %}

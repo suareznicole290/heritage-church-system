@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Heritage Churches of Bohol{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block nav_analytics %}active{% endblock %}
+{% block m_nav_analytics %}active{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+  background: var(--brown-dark);
+  background-image: none;
+  padding: 24px 1.25rem 20px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.page-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.25;
+}
+
+.page-title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--gold-light);
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.scope-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 13px;
+  background: rgba(255,255,255,0.08);
+  color: var(--gold-light);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.scope-badge strong {
+  color: #fff;
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 20px 16px 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 3px 10px var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-brown { background: rgba(107,61,42,0.12); color: var(--brown-mid); }
+.icon-terra { background: rgba(193,68,14,0.1); color: var(--terracotta); }
+.icon-green { background: rgba(46,107,79,0.12); color: var(--green-safe); }
+.icon-gold  { background: rgba(201,168,76,0.15); color: var(--yellow-med); }
+
+.stat-text {
+  min-width: 0;
+}
+
+.stat-number {
+  font-family: 'Merriweather', serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #4a2416;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #6a3a27;
+  margin-top: 8px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.95fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
+  gap: 20px;
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  flex-wrap: wrap;
+}
+
+.card-title-bar svg {
+  width: 15px;
+  height: 15px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  line-height: 1.4;
+}
+
+.card-body {
+  padding: 18px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 250px;
+}
+
+.chart-wrap.small {
+  height: 210px;
+}
+
+.risk-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.risk-item {
+  padding: 16px 14px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.risk-item.high { background: #fde8e8; }
+.risk-item.medium { background: #fef3cd; }
+.risk-item.low { background: #d4edda; }
+.risk-item.none { background: var(--parchment); }
+
+.risk-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.risk-item.high .risk-num { color: var(--red-high); }
+.risk-item.medium .risk-num { color: var(--yellow-med); }
+.risk-item.low .risk-num { color: var(--green-safe); }
+.risk-item.none .risk-num { color: var(--gray-muted); }
+
+.risk-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 6px;
+  color: var(--gray-muted);
+  line-height: 1.4;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ranking-table {
+  width: 100%;
+  min-width: 320px;
+  border-collapse: collapse;
+}
+
+.ranking-table th,
+.ranking-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--parchment);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.ranking-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--gray-muted);
+  background: var(--cream);
+}
+
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rank-badge {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.16);
+  color: var(--brown-mid);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 1280px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 22px;
+  }
+
+  .page-header {
+    padding: 20px 1rem 18px;
+  }
+
+  .page-header-inner,
+  .main-content {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chart-wrap {
+    height: 220px;
+  }
+
+  .chart-wrap.small {
+    height: 200px;
+  }
+
+  .card-title-bar {
+    padding: 14px 16px;
+  }
+
+  .main-content {
+    padding: 18px 0 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header,
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .page-header {
+    padding-top: 20px;
+    padding-bottom: 18px;
+  }
+
+  .main-content {
+    padding-top: 20px;
+  }
+
+  .scope-badge {
+    font-size: 11px;
+    padding: 7px 12px;
+    border-radius: 18px;
+  }
+
+  .risk-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .section-card {
+    border-radius: 12px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .chart-wrap {
+    height: 210px;
+  }
+
+  .chart-wrap.small {
+    height: 190px;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-title svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stat-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .chart-wrap {
+    height: 190px;
+  }
+
+  .chart-wrap.small {
+    height: 175px;
+  }
+
+  .risk-item {
+    padding: 14px 12px;
+  }
+
+  .risk-num {
+    font-size: 28px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title">{{ icons.analytics(24) }}<span>Analytics & Summary</span></div>
+      <div class="page-subtitle">
+        {% if session['role_name'] == 'Super Admin' %}
+          System-wide statistics and insights
+        {% else %}
+          Municipality-based statistics and insights
+        {% endif %}
+      </div>
+      <div class="scope-badge">
+        Viewing analytics scope: <strong>{{ scope_label }}</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="main-content">
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon icon-brown">{{ icons.church(24) }}</div>
+      <div class="stat-text">
+        <div class="stat-number">{{ total_churches }}</div>
+        <div class="stat-label">Total Churches</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-terra">{{ icons.reports(24) }}</div>
+      <div class="stat-text">
+        <div class="stat-number">{{ total_reports }}</div>
+        <div class="stat-label">Total Reports</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-green">{{ icons.check_circle(24) }}</div>
+      <div class="stat-text">
+        <div class="stat-number">{{ resolved_reports }}</div>
+        <div class="stat-label">Resolved Reports</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-gold">{{ icons.warning(24) }}</div>
+      <div class="stat-text">
+        <div class="stat-number">{{ total_assessments }}</div>
+        <div class="stat-label">Hazard Assessments</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="section-card">
+      <div class="card-title-bar">
+        {{ icons.analytics(16) }}
+        <span class="card-title">Reports by Status</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        {{ icons.target(16) }}
+        <span class="card-title">Churches by Risk Level</span>
+      </div>
+      <div class="card-body">
+        <div class="risk-summary">
+          <div class="risk-item high">
+            <div class="risk-num">{{ risk_summary.high or 0 }}</div>
+            <div class="risk-lbl">High Risk</div>
+          </div>
+          <div class="risk-item medium">
+            <div class="risk-num">{{ risk_summary.medium or 0 }}</div>
+            <div class="risk-lbl">Medium Risk</div>
+          </div>
+          <div class="risk-item low">
+            <div class="risk-num">{{ risk_summary.low or 0 }}</div>
+            <div class="risk-lbl">Low Risk</div>
+          </div>
+          <div class="risk-item none">
+            <div class="risk-num">{{ risk_summary.unassessed or 0 }}</div>
+            <div class="risk-lbl">Unassessed</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap small" style="margin-top: 18px;">
+          <canvas id="riskChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="section-card">
+      <div class="card-title-bar">
+        {{ icons.warning(16) }}
+        <span class="card-title">Reports by Hazard Type</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="hazardChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-title-bar">
+        {{ icons.map(16) }}
+        <span class="card-title">
+          {% if session['role_name'] == 'Super Admin' %}
+            Reports by Municipality
+          {% else %}
+            Reports in Your Municipality
+          {% endif %}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Municipality</th>
+                <th>Total Reports</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in reports_by_municipality %}
+              <tr>
+                <td><span class="rank-badge">{{ loop.index }}</span></td>
+                <td>{{ m.municipality_name }}</td>
+                <td>{{ m.total }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="3" style="color: var(--gray-muted); font-style: italic; white-space: normal;">No municipality data available.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="chart-wrap small" style="margin-top: 18px;">
+          <canvas id="municipalityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const statusLabels = {{ reports_by_status | map(attribute='report_status') | list | tojson }};
+  const statusData = {{ reports_by_status | map(attribute='total') | list | tojson }};
+
+  const hazardLabels = {{ reports_by_hazard | map(attribute='hazard_name') | list | tojson }};
+  const hazardData = {{ reports_by_hazard | map(attribute='total') | list | tojson }};
+
+  const municipalityLabels = {{ reports_by_municipality | map(attribute='municipality_name') | list | tojson }};
+  const municipalityData = {{ reports_by_municipality | map(attribute='total') | list | tojson }};
+
+  const riskLabels = ['High Risk', 'Medium Risk', 'Low Risk', 'Unassessed'];
+  const riskData = [
+    {{ risk_summary.high or 0 }},
+    {{ risk_summary.medium or 0 }},
+    {{ risk_summary.low or 0 }},
+    {{ risk_summary.unassessed or 0 }}
+  ];
+
+  const chartTextColor = '#6B3D2A';
+  const gridColor = 'rgba(138,128,112,0.18)';
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+      labels: statusLabels,
+      datasets: [{
+        label: 'Reports',
+        data: statusData,
+        backgroundColor: ['#B07D10', '#C1440E', '#2E6B4F', '#6B3D2A', '#C9A84C'],
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: { color: chartTextColor },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: chartTextColor, precision: 0 },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('riskChart'), {
+    type: 'doughnut',
+    data: {
+      labels: riskLabels,
+      datasets: [{
+        data: riskData,
+        backgroundColor: ['#9B2020', '#B07D10', '#2E6B4F', '#CFC6B8'],
+        borderColor: '#F5F0E8',
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: chartTextColor,
+            boxWidth: 14,
+            padding: 16
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('hazardChart'), {
+    type: 'bar',
+    data: {
+      labels: hazardLabels,
+      datasets: [{
+        label: 'Reports',
+        data: hazardData,
+        backgroundColor: '#C9A84C',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: chartTextColor, precision: 0 },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: chartTextColor },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('municipalityChart'), {
+    type: 'bar',
+    data: {
+      labels: municipalityLabels,
+      datasets: [{
+        label: 'Reports',
+        data: municipalityData,
+        backgroundColor: '#6B3D2A',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: chartTextColor,
+            maxRotation: 45,
+            minRotation: 20
+          },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: chartTextColor, precision: 0 },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

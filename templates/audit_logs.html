@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs — Heritage Churches of Bohol{% endblock %}
+
+{% block nav_logs %}active{% endblock %}
+{% block m_nav_logs %}active{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+  background: var(--brown-dark);
+  background-image: none;
+  padding: 32px 1.25rem 28px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.page-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-title svg {
+  width: 24px;
+  height: 24px;
+  color: var(--gold-light);
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 16px 20px;
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-title-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.card-title-left svg {
+  width: 16px;
+  height: 16px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brown-dark);
+}
+
+.card-count {
+  font-size: 11px;
+  color: var(--gray-muted);
+  background: var(--parchment);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gray-muted);
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--parchment);
+  vertical-align: top;
+  white-space: nowrap;
+  color: var(--brown-dark);
+}
+
+.data-table td:last-child {
+  white-space: normal;
+  min-width: 260px;
+  line-height: 1.6;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+  background: #fdfaf6;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--gray-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.action-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  background: var(--parchment);
+  color: var(--gray-muted);
+  white-space: nowrap;
+}
+
+.action-insert { background: #d4edda; color: var(--green-safe); }
+.action-update { background: #fef3cd; color: var(--yellow-med); }
+.action-delete { background: #fde8e8; color: var(--red-high); }
+.action-login  { background: rgba(201,168,76,0.2); color: var(--brown-mid); }
+.action-logout { background: rgba(232,244,253,1); color: #1a6e9e; }
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 22px;
+  }
+
+  .page-header {
+    padding: 24px 1rem 22px;
+  }
+
+  .page-header-inner,
+  .main-content {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .main-content {
+    padding: 20px 0 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header,
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .card-title-bar {
+    padding: 14px 16px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title">{{ icons.logs(24) }}<span>Audit Logs</span></div>
+      <div class="page-subtitle">Recent system actions and activity records</div>
+    </div>
+  </div>
+</section>
+
+<main class="main-content">
+  <div class="section-card">
+    <div class="card-title-bar">
+      <div class="card-title-left">
+        {{ icons.logs(16) }}
+        <span class="card-title">System Audit Trail</span>
+        <span class="card-count">{{ logs|length }}</span>
+      </div>
+    </div>
+
+    {% if logs and logs|length > 0 %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Table</th>
+            <th>Record ID</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.audit_id }}</td>
+            <td>{{ log.action_timestamp }}</td>
+            <td>
+              {% if log.full_name %}
+                {{ log.full_name }}{% if log.username %} ({{ log.username }}){% endif %}
+              {% else %}
+                Unknown User
+              {% endif %}
+            </td>
+            <td>
+              <span class="action-badge
+                {% if log.action_type == 'INSERT' %}action-insert
+                {% elif log.action_type == 'UPDATE' %}action-update
+                {% elif log.action_type == 'DELETE' %}action-delete
+                {% elif log.action_type == 'LOGIN' %}action-login
+                {% elif log.action_type == 'LOGOUT' %}action-logout
+                {% endif %}">
+                {{ log.action_type or 'N/A' }}
+              </span>
+            </td>
+            <td>{{ log.affected_table or '—' }}</td>
+            <td>{{ log.record_id or '—' }}</td>
+            <td>{{ log.description or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">No audit logs found.</div>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

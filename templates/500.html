@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+
+{% block title %}Server Error — Heritage Churches of Bohol{% endblock %}
+
+{% block extra_styles %}
+.error-shell {
+  min-height: calc(100vh - 220px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 1.25rem 64px;
+}
+
+.error-card {
+  width: 100%;
+  max-width: 760px;
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 20px;
+  box-shadow: 0 16px 40px var(--shadow);
+  overflow: hidden;
+}
+
+.error-top {
+  background: var(--brown-dark);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(193,68,14,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(201,168,76,0.13) 0%, transparent 50%);
+  padding: 34px 28px;
+  color: #fff;
+  border-bottom: 1px solid rgba(201,168,76,0.22);
+}
+
+.error-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.25);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.error-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.error-code {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 10px;
+}
+
+.error-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.error-body {
+  padding: 28px;
+}
+
+.error-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--brown-dark);
+  margin: 0 0 18px;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.error-btn-primary,
+.error-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.error-btn-primary {
+  background: var(--terracotta);
+  color: #fff;
+  border: 1px solid var(--terracotta);
+}
+
+.error-btn-primary:hover {
+  background: var(--terra-soft);
+}
+
+.error-btn-secondary {
+  background: #fff;
+  color: var(--brown-mid);
+  border: 1px solid var(--parchment);
+}
+
+.error-btn-secondary:hover {
+  background: var(--cream);
+}
+
+.error-btn-primary svg,
+.error-btn-secondary svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 640px) {
+  .error-shell {
+    padding: 32px 1rem 48px;
+  }
+
+  .error-top,
+  .error-body {
+    padding: 22px 18px;
+  }
+
+  .error-actions {
+    flex-direction: column;
+  }
+
+  .error-btn-primary,
+  .error-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+{% endblock %}
+
+{% block content %}
+<div class="error-shell">
+  <div class="error-card">
+    <div class="error-top">
+      <div class="error-badge">
+        {{ icons.warning(14) }}
+        <span>System Error</span>
+      </div>
+      <div class="error-code">500</div>
+      <h1 class="error-title">Internal Server Error</h1>
+    </div>
+
+    <div class="error-body">
+      <p class="error-text">
+        Something went wrong while processing your request. The system encountered
+        an unexpected error.
+      </p>
+
+      <p class="error-text">
+        Please try again in a moment. If the issue continues, return to a safe page
+        and check the affected record or action again.
+      </p>
+
+      <div class="error-actions">
+        {% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+        <a href="/dashboard" class="error-btn-primary">
+          {{ icons.dashboard(14) }}
+          <span>Return to Dashboard</span>
+        </a>
+        {% else %}
+        <a href="/" class="error-btn-primary">
+          {{ icons.landmark(14) }}
+          <span>Return to Homepage</span>
+        </a>
+        {% endif %}
+
+        <a href="/hazard-map" class="error-btn-secondary">
+          {{ icons.map(14) }}
+          <span>Open Hazard Map</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2320 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Heritage Churches of Bohol{% endblock %}
+
+{% block nav_dashboard %}active{% endblock %}
+{% block m_nav_dashboard %}active{% endblock %}
+
+{% block extra_styles %}
+.page-header {
+  background: var(--brown-dark);
+  padding: 32px 1.25rem 28px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.page-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.page-title {
+  font-family: 'Merriweather', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.82);
+  margin-top: 6px;
+  line-height: 1.7;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--cream);
+  color: var(--brown-dark);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--parchment);
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(44,24,16,0.10);
+}
+
+.btn-primary:hover {
+  background: #f7efe2;
+  border-color: var(--gold);
+  color: var(--brown-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.92);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  backdrop-filter: blur(2px);
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 16px 20px;
+  background: #FFFFFF;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  min-width: 0;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.stat-card:hover {
+  box-shadow: 0 10px 22px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-brown { background: rgba(93, 64, 55, 0.10); color: var(--brown-mid); }
+.icon-red   { background: rgba(211, 47, 47, 0.10); color: var(--red-high); }
+.icon-gold  { background: rgba(251, 192, 45, 0.16); color: var(--yellow-med); }
+.icon-green { background: rgba(46, 125, 50, 0.10); color: var(--green-safe); }
+.icon-terra { background: rgba(46, 125, 50, 0.10); color: var(--terracotta); }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-number {
+  font-family: 'Merriweather', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #5F6368;
+  font-weight: 600;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.7fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 16px var(--shadow);
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-title-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.card-title-left svg {
+  width: 16px;
+  height: 16px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: 'Merriweather', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brown-dark);
+}
+
+.card-count {
+  font-size: 11px;
+  color: #4F4F4F;
+  background: #ECECEC;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.card-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  text-decoration: none;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.card-link:hover { color: var(--terracotta); }
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gray-muted);
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--parchment);
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--brown-dark);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table tbody tr:hover td {
+  background: #FDF9F3;
+}
+
+.church-name-cell {
+  font-weight: 700;
+  color: var(--brown-dark);
+}
+
+.muni-cell {
+  color: #5F6368;
+  font-size: 12px;
+}
+
+.risk-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.tag-high   { background: #FDE8E8; color: var(--red-high); }
+.tag-medium { background: #FEF3CD; color: var(--yellow-med); }
+.tag-low    { background: #D4EDDA; color: var(--green-safe); }
+.tag-none   { background: var(--parchment); color: var(--gray-muted); }
+
+.action-cell {
+  white-space: normal !important;
+}
+
+.action-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brown-mid);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--parchment);
+  transition: all 0.2s;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.action-link svg {
+  width: 13px;
+  height: 13px;
+}
+
+.action-link:hover {
+  background: var(--cream);
+  color: var(--terracotta);
+  border-color: var(--terracotta);
+}
+
+.report-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid #DDDDDD;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.report-item:last-child { border-bottom: none; }
+
+.report-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.dot-pending   { background: var(--yellow-med); }
+.dot-assessing { background: var(--terracotta); }
+.dot-resolved  { background: var(--green-safe); }
+
+.report-info { flex: 1; min-width: 0; }
+
+.report-church {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.report-meta {
+  font-size: 11px;
+  color: #5F6368;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+
+.report-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.status-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.chip-pending   { background: #FFF4CC; color: var(--yellow-med); }
+.chip-assessing { background: #FDE8E8; color: var(--terracotta); }
+.chip-resolved  { background: #DDEFE0; color: var(--green-safe); }
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px;
+}
+
+.quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 1px solid var(--parchment);
+  background: #fff;
+  transition: all 0.2s;
+  text-align: center;
+  cursor: pointer;
+  color: inherit;
+  min-height: 96px;
+}
+
+.quick-btn:hover {
+  border-color: var(--gold);
+  box-shadow: 0 2px 10px var(--shadow);
+  transform: translateY(-1px);
+}
+
+.quick-btn-icon {
+  color: var(--brown-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-btn-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.quick-btn-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brown-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  line-height: 1.3;
+}
+
+.muni-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 12px;
+  border-bottom: 1px solid #DDDDDD;
+}
+
+.muni-row:last-child { border-bottom: none; }
+
+.muni-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brown-dark);
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.muni-bar-wrap {
+  width: 80px;
+  height: 6px;
+  background: #E7E7E7;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.muni-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--terra-soft));
+}
+
+.muni-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5F6368;
+  min-width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(44,24,16,0.45);
+  backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.20);
+  border-top: 4px solid var(--gold);
+}
+
+.manage-modal-box {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1080px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.20);
+  border-top: 4px solid var(--gold);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #DDDDDD;
+  background: #FFFFFF;
+  border-radius: 12px 12px 0 0;
+  gap: 10px;
+}
+
+.modal-title {
+  font-family: 'Merriweather', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.3;
+}
+
+.modal-title svg {
+  width: 18px;
+  height: 18px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.modal-subtitle {
+  font-size: 12px;
+  color: #5F6368;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #777;
+  padding: 4px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.modal-close:hover { background: #F2F2F2; }
+
+.modal-body { padding: 24px; }
+
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #D4D4D4;
+  border-radius: 8px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: var(--brown-dark);
+  background: #FFFFFF;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(251,192,45,0.15);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: #FFFFFF;
+  color: var(--brown-mid);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid #D4D4D4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #FAFAFA;
+  border-color: var(--gold);
+}
+
+.btn-submit {
+  padding: 10px 24px;
+  background: var(--terracotta);
+  color: #FFFFFF;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-submit:hover { background: var(--terra-soft); }
+
+.manage-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.manage-sections {
+  display: grid;
+  gap: 20px;
+}
+
+.manage-section {
+  border: 1px solid #D6D6D6;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #FFFFFF;
+  scroll-margin-top: 16px;
+}
+
+.manage-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #DDDDDD;
+  font-family: 'Merriweather', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brown-dark);
+}
+
+.manage-section-head svg {
+  width: 16px;
+  height: 16px;
+  color: var(--brown-mid);
+  flex-shrink: 0;
+}
+
+.manage-section-body {
+  padding: 16px;
+}
+
+.manage-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.manage-divider {
+  height: 1px;
+  background: #E0E0E0;
+  margin: 12px 0 18px;
+}
+
+.manage-record-list {
+  display: grid;
+  gap: 12px;
+}
+
+.manage-record-card {
+  border: 1px solid #DDDDDD;
+  border-radius: 10px;
+  padding: 12px;
+  background: #FFFFFF;
+}
+
+.manage-record-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 4px;
+}
+
+.manage-record-meta {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.manage-record-text {
+  font-size: 13px;
+  color: var(--brown-dark);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 10px;
+}
+
+.manage-record-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.manage-thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.manage-thumb-card {
+  border: 1px solid #DDDDDD;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.manage-thumb-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+.manage-thumb-meta {
+  padding: 10px;
+}
+
+.manage-thumb-text {
+  font-size: 11px;
+  color: var(--brown-dark);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.manage-empty {
+  padding: 14px;
+  border: 1px dashed #DDDDDD;
+  border-radius: 10px;
+  color: #777;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.report-image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+
+.report-thumb-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.report-thumb-wrap img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #DDDDDD;
+}
+
+@media (max-width: 1400px) {
+  .main-content,
+  .page-header-inner {
+    width: calc(100vw - 24px);
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1100px) {
+  .manage-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .page-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    justify-content: stretch;
+  }
+
+  .header-actions .btn-primary,
+  .header-actions .btn-secondary {
+    flex: 1 1 220px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 700px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .quick-actions { grid-template-columns: 1fr 1fr; }
+  .page-title { font-size: 22px; }
+
+  .report-item {
+    flex-wrap: wrap;
+  }
+
+  .report-side {
+    width: 100%;
+    align-items: flex-start;
+    margin-left: 20px;
+  }
+
+  .manage-two-col,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header, .main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .page-header {
+    padding-top: 26px;
+    padding-bottom: 22px;
+  }
+
+  .main-content {
+    padding-top: 24px;
+    width: calc(100vw - 16px);
+  }
+
+  .stats-grid { grid-template-columns: 1fr; }
+  .quick-actions { grid-template-columns: 1fr; }
+  .header-actions { flex-direction: column; }
+
+  .header-actions .btn-primary,
+  .header-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .card-title-bar {
+    padding: 14px 16px;
+  }
+
+  .section-card {
+    border-radius: 12px;
+  }
+
+  .report-item {
+    padding: 14px 16px;
+  }
+
+  .report-side {
+    margin-left: 20px;
+  }
+
+  .muni-row {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .muni-bar-wrap {
+    width: 56px;
+  }
+
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .modal-box,
+  .manage-modal-box {
+    max-height: 94vh;
+    border-radius: 14px;
+  }
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .stat-card {
+    padding: 16px 16px;
+    gap: 12px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .data-table {
+    min-width: 640px;
+  }
+
+  .quick-btn {
+    min-height: 84px;
+    padding: 14px 10px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% import "_icons.html" as icons %}
+
+<section class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-title">
+        {% if session['role_name'] == 'Super Admin' %}Provincial Dashboard{% else %}Municipal Dashboard{% endif %}
+      </div>
+      <div class="page-subtitle">
+        {% if session['role_name'] == 'Super Admin' %}Full system overview — Province of Bohol{% else %}Managing churches within your assigned municipality{% endif %}
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-primary" onclick="openModal()">{{ icons.plus(14) }}<span>Add Church</span></button>
+      <button class="btn-secondary" onclick="openReportModal()">{{ icons.reports(14) }}<span>Submit Report</span></button>
+      <a href="/" class="btn-secondary">{{ icons.public_view(14) }}<span>Public View</span></a>
+    </div>
+  </div>
+</section>
+
+<main class="main-content">
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon icon-brown">{{ icons.church(22) }}</div>
+      <div class="stat-info">
+        <div class="stat-number">{{ total_churches }}</div>
+        <div class="stat-label">{% if session['role_name'] == 'Super Admin' %}Total Churches{% else %}Your Churches{% endif %}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-red">{{ icons.warning(22) }}</div>
+      <div class="stat-info">
+        <div class="stat-number">{{ high_risk }}</div>
+        <div class="stat-label">High Risk</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-terra">{{ icons.reports(22) }}</div>
+      <div class="stat-info">
+        <div class="stat-number">{{ total_reports }}</div>
+        <div class="stat-label">Disaster Reports</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon icon-gold">{{ icons.calendar(22) }}</div>
+      <div class="stat-info">
+        <div class="stat-number">{{ pending_reports }}</div>
+        <div class="stat-label">Pending Reports</div>
+      </div>
+    </div>
+
+    {% if session['role_name'] == 'Super Admin' %}
+    <div class="stat-card">
+      <div class="stat-icon icon-green">{{ icons.users(22) }}</div>
+      <div class="stat-info">
+        <div class="stat-number">{{ total_users }}</div>
+        <div class="stat-label">System Users</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="two-col">
+
+    <div>
+      <div class="section-card">
+        <div class="card-title-bar">
+          <div class="card-title-left">
+            {{ icons.church(16) }}
+            <span class="card-title">{% if session['role_name'] == 'Super Admin' %}All Heritage Churches{% else %}Your Churches{% endif %}</span>
+            <span class="card-count">{{ churches | length }}</span>
+          </div>
+          <button class="card-link" onclick="openModal()" style="background:none; border:none; cursor:pointer;">{{ icons.plus(14) }}<span>Add Church</span></button>
+        </div>
+
+        {% if churches %}
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Church Name</th>
+                {% if session['role_name'] == 'Super Admin' %}<th>Municipality</th>{% endif %}
+                <th>Risk Level</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in churches %}
+              <tr>
+                <td class="church-name-cell">{{ c.church_name }}</td>
+                {% if session['role_name'] == 'Super Admin' %}
+                <td class="muni-cell">{{ c.municipality_name }}</td>
+                {% endif %}
+                <td>
+                  {% if c.highest_risk == 'High' %}<span class="risk-tag tag-high">High</span>
+                  {% elif c.highest_risk == 'Medium' %}<span class="risk-tag tag-medium">Medium</span>
+                  {% elif c.highest_risk == 'Low' %}<span class="risk-tag tag-low">Low</span>
+                  {% else %}<span class="risk-tag tag-none">Unassessed</span>{% endif %}
+                </td>
+                <td style="font-size:12px; color:var(--gray-muted);">{{ c.monitoring_status }}</td>
+                <td class="action-cell">
+                  <div class="action-group">
+                    <a href="/church/{{ c.church_id }}" class="action-link">{{ icons.view(13) }}<span>View</span></a>
+
+                    <button
+                      class="action-link"
+                      type="button"
+                      onclick='openManageChurchModal({{ c.church_id|tojson }})'>
+                      {{ icons.edit(13) }}<span>Manage</span>
+                    </button>
+
+                    <form method="POST" action="/admin/delete-church/{{ c.church_id }}"
+                          onsubmit="return confirm('Are you sure you want to delete {{ c.church_name|e }}? This cannot be undone.');"
+                          style="margin:0;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="action-link" style="border:1px solid #F2CACA; color:var(--red-high); cursor:pointer;">{{ icons.trash(13) }}<span>Delete</span></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">No churches found.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <div class="section-card">
+        <div class="card-title-bar">
+          <div class="card-title-left">
+            {{ icons.bolt(16) }}
+            <span class="card-title">Quick Actions</span>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-btn" onclick="openModal()">
+            <span class="quick-btn-icon">{{ icons.church(22) }}</span>
+            <span class="quick-btn-label">Add Church</span>
+          </button>
+
+          <button class="quick-btn" onclick="openReportModal()">
+            <span class="quick-btn-icon">{{ icons.reports(22) }}</span>
+            <span class="quick-btn-label">Submit Report</span>
+          </button>
+
+          <button class="quick-btn" onclick="openAssessmentModal()">
+            <span class="quick-btn-icon">{{ icons.warning(22) }}</span>
+            <span class="quick-btn-label">Add Assessment</span>
+          </button>
+
+          <a href="/admin/reports" class="quick-btn">
+            <span class="quick-btn-icon">{{ icons.checklist(22) }}</span>
+            <span class="quick-btn-label">View Reports</span>
+          </a>
+
+          <a href="/admin/analytics" class="quick-btn">
+            <span class="quick-btn-icon">{{ icons.analytics(22) }}</span>
+            <span class="quick-btn-label">Analytics</span>
+          </a>
+
+          <a href="/hazard-map" class="quick-btn">
+            <span class="quick-btn-icon">{{ icons.map(22) }}</span>
+            <span class="quick-btn-label">Hazard Map</span>
+          </a>
+
+          {% if session['role_name'] == 'Super Admin' %}
+          <a href="/admin/users" class="quick-btn">
+            <span class="quick-btn-icon">{{ icons.users(22) }}</span>
+            <span class="quick-btn-label">Manage Users</span>
+          </a>
+
+          <a href="/admin/logs" class="quick-btn">
+            <span class="quick-btn-icon">{{ icons.logs(22) }}</span>
+            <span class="quick-btn-label">Audit Logs</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="card-title-bar">
+          <div class="card-title-left">
+            {{ icons.reports(16) }}
+            <span class="card-title">Recent Reports</span>
+          </div>
+          <a href="/admin/reports" class="card-link">View All</a>
+        </div>
+
+        {% if recent_reports %}
+          {% for r in recent_reports %}
+          <div class="report-item">
+            <div class="report-dot {% if r.report_status == 'Resolved' %}dot-resolved{% elif r.report_status == 'Under Assessment' %}dot-assessing{% else %}dot-pending{% endif %}"></div>
+            <div class="report-info">
+              <div class="report-church">{{ r.church_name }}</div>
+              <div class="report-meta">
+                <span>{{ r.hazard_name }}</span>
+                <span>·</span>
+                <span>{{ r.report_date }}</span>
+                {% if session['role_name'] == 'Super Admin' %}<span>·</span><span>{{ r.municipality_name }}</span>{% endif %}
+              </div>
+            </div>
+            <div class="report-side">
+              <span class="status-chip {% if r.report_status == 'Resolved' %}chip-resolved{% elif r.report_status == 'Under Assessment' %}chip-assessing{% else %}chip-pending{% endif %}">
+                {{ r.report_status }}
+              </span>
+              {% if r.report_status != 'Resolved' %}
+              <button class="card-link" style="background:none; border:none; font-size:11px; cursor:pointer; color:var(--brown-mid);"
+                onclick="openStatusModal({{ r.report_id }}, '{{ r.church_name|e }}', '{{ r.report_status }}')">
+                <span>Update ↓</span>
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+        <div class="empty-state">No reports yet.</div>
+        {% endif %}
+      </div>
+
+      {% if session['role_name'] == 'Super Admin' %}
+      <div class="section-card">
+        <div class="card-title-bar">
+          <div class="card-title-left">
+            {{ icons.map(16) }}
+            <span class="card-title">Churches by Municipality</span>
+          </div>
+        </div>
+        {% set max_count = municipality_stats | map(attribute='church_count') | max %}
+        {% for m in municipality_stats %}
+        <div class="muni-row">
+          <span class="muni-name">{{ m.municipality_name }}</span>
+          <div class="muni-bar-wrap">
+            <div class="muni-bar" style="width: {% if max_count > 0 %}{{ (m.church_count / max_count * 100) | int }}%{% else %}0%{% endif %};"></div>
+          </div>
+          <span class="muni-count">{{ m.church_count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+
+<div id="addChurchModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.church(18) }}<span>Add New Church</span></div>
+        <div class="modal-subtitle">Fill in the details to register a new heritage church</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/admin/add-church">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Church Name</label>
+          <input class="form-input" type="text" name="church_name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Municipality</label>
+          <select class="form-select" name="municipality_id" required>
+            <option value="">-- Select Municipality --</option>
+            {% for m in municipalities %}
+              {% if session['role_name'] == 'Super Admin' %}
+                <option value="{{ m.municipality_id }}">{{ m.municipality_name }}</option>
+              {% elif m.municipality_id == session.get('municipality_id') %}
+                <option value="{{ m.municipality_id }}" selected>{{ m.municipality_name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Barangay</label>
+            <input class="form-input" type="text" name="barangay" required>
+          </div>
+          <div>
+            <label class="form-label">Address</label>
+            <input class="form-input" type="text" name="address">
+          </div>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Year Built</label>
+            <input class="form-input" type="number" name="date_built" min="1500" max="2100">
+          </div>
+          <div>
+            <label class="form-label">Monitoring Status</label>
+            <select class="form-select" name="monitoring_status" required>
+              <option value="Active">Active</option>
+              <option value="Under Restoration">Under Restoration</option>
+              <option value="Damaged">Damaged</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Latitude</label>
+            <input class="form-input" type="number" name="latitude" step="0.0000001">
+          </div>
+          <div>
+            <label class="form-label">Longitude</label>
+            <input class="form-input" type="number" name="longitude" step="0.0000001">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.plus(14) }}<span>Add Church</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="reportModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.reports(18) }}<span>Submit Disaster Report</span></div>
+        <div class="modal-subtitle">Report a disaster or damage incident for a heritage church</div>
+      </div>
+      <button class="modal-close" onclick="closeReportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/admin/submit-report" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Church</label>
+          <select class="form-select" name="church_id" required>
+            <option value="">-- Select Church --</option>
+            {% for c in churches %}
+              <option value="{{ c.church_id }}">{{ c.church_name }} — {{ c.municipality_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hazard Type</label>
+          <select class="form-select" name="hazard_type_id" required>
+            <option value="">-- Select Hazard Type --</option>
+            {% for h in hazard_types %}
+              <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Incident Date</label>
+            <input class="form-input" type="date" name="incident_date">
+          </div>
+          <div>
+            <label class="form-label">Damage Level</label>
+            <select class="form-select" name="damage_level">
+              <option value="">-- Select Level --</option>
+              <option value="Minor">Minor</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Major">Major</option>
+              <option value="Destroyed">Destroyed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Report Description</label>
+          <textarea class="form-input" name="report_description" rows="4" required style="resize:vertical;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Damage Photos</label>
+          <input class="form-input" type="file" name="report_images" accept="image/*" multiple>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.reports(14) }}<span>Submit Report</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="assessmentModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.warning(18) }}<span>Add Hazard Assessment</span></div>
+        <div class="modal-subtitle">Record a hazard risk assessment for a heritage church</div>
+      </div>
+      <button class="modal-close" onclick="closeAssessmentModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/admin/add-assessment">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Church</label>
+          <select class="form-select" name="church_id" required>
+            <option value="">-- Select Church --</option>
+            {% for c in churches %}
+              <option value="{{ c.church_id }}">{{ c.church_name }} — {{ c.municipality_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hazard Type</label>
+          <select class="form-select" name="hazard_type_id" required>
+            <option value="">-- Select Hazard Type --</option>
+            {% for h in hazard_types %}
+              <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Risk Level</label>
+            <select class="form-select" name="risk_level" required>
+              <option value="">-- Select Risk Level --</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Assessment Date</label>
+            <input class="form-input" type="date" name="assessment_date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <textarea class="form-input" name="assessment_remarks" rows="3" style="resize:vertical;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeAssessmentModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.warning(14) }}<span>Save Assessment</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="manageChurchModal" class="modal-overlay">
+  <div class="manage-modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.edit(18) }}<span id="manageChurchTitle">Manage Church</span></div>
+        <div class="modal-subtitle">Update church profile and manage related records in one place</div>
+      </div>
+      <button class="modal-close" onclick="closeManageChurchModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="manage-grid">
+        <div class="manage-sections">
+
+          <div class="manage-section" id="manage-section-profile">
+            <div class="manage-section-head">{{ icons.landmark(16) }}<span>Church Profile</span></div>
+            <div class="manage-section-body">
+              <form method="POST" id="manageProfileForm" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="redirect_to" value="dashboard_manage:profile">
+
+                <div class="form-group">
+                  <label class="form-label">Church Name</label>
+                  <input class="form-input" type="text" name="church_name" id="manage_church_name" required>
+                </div>
+
+                <div class="manage-two-col form-group">
+                  <div>
+                    <label class="form-label">Municipality</label>
+                    <select class="form-select" name="municipality_id" id="manage_municipality_id" required>
+                      <option value="">-- Select Municipality --</option>
+                      {% for m in municipalities %}
+                        {% if session['role_name'] == 'Super Admin' %}
+                          <option value="{{ m.municipality_id }}">{{ m.municipality_name }}</option>
+                        {% elif m.municipality_id == session.get('municipality_id') %}
+                          <option value="{{ m.municipality_id }}">{{ m.municipality_name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">Barangay</label>
+                    <input class="form-input" type="text" name="barangay" id="manage_barangay" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Address</label>
+                  <input class="form-input" type="text" name="address" id="manage_address">
+                </div>
+
+                <div class="manage-two-col form-group">
+                  <div>
+                    <label class="form-label">Year Built</label>
+                    <input class="form-input" type="number" name="date_built" id="manage_date_built" min="1500" max="2100">
+                  </div>
+                  <div>
+                    <label class="form-label">Monitoring Status</label>
+                    <select class="form-select" name="monitoring_status" id="manage_monitoring_status" required>
+                      <option value="Active">Active</option>
+                      <option value="Under Restoration">Under Restoration</option>
+                      <option value="Damaged">Damaged</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="manage-two-col form-group">
+                  <div>
+                    <label class="form-label">Latitude</label>
+                    <input class="form-input" type="number" name="latitude" id="manage_latitude" step="0.0000001">
+                  </div>
+                  <div>
+                    <label class="form-label">Longitude</label>
+                    <input class="form-input" type="number" name="longitude" id="manage_longitude" step="0.0000001">
+                  </div>
+                </div>
+
+                <div class="manage-divider"></div>
+
+                <div class="form-group">
+                  <label class="form-label">Historical Background</label>
+                  <textarea class="form-input" name="historical_background" id="manage_historical_background" rows="4" style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Historical Period</label>
+                  <input class="form-input" type="text" name="historical_period" id="manage_historical_period">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Cultural Significance</label>
+                  <textarea class="form-input" name="cultural_significance" id="manage_cultural_significance" rows="4" style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Religious Significance</label>
+                  <textarea class="form-input" name="religious_significance" id="manage_religious_significance" rows="4" style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Notable Artifacts</label>
+                  <textarea class="form-input" name="notable_artifacts" id="manage_notable_artifacts" rows="4" style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn-submit">{{ icons.edit(14) }}<span>Save Church Profile</span></button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="manage-section" id="manage-section-assessments">
+            <div class="manage-section-head">{{ icons.warning(16) }}<span>Add Hazard Assessment</span></div>
+            <div class="manage-section-body">
+              <form method="POST" action="/admin/add-assessment">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="church_id" id="manage_assessment_church_id">
+                <input type="hidden" name="redirect_to" value="dashboard_manage:assessments">
+
+                <div class="manage-two-col form-group">
+                  <div>
+                    <label class="form-label">Hazard Type</label>
+                    <select class="form-select" name="hazard_type_id" required>
+                      <option value="">-- Select Hazard Type --</option>
+                      {% for h in hazard_types %}
+                        <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">Risk Level</label>
+                    <select class="form-select" name="risk_level" required>
+                      <option value="">-- Select Risk Level --</option>
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Assessment Date</label>
+                  <input class="form-input" type="date" name="assessment_date">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Remarks</label>
+                  <textarea class="form-input" name="assessment_remarks" rows="3" style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn-submit">{{ icons.warning(14) }}<span>Add Assessment</span></button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="manage-section" id="manage-section-images">
+            <div class="manage-section-head">{{ icons.image_icon(16) }}<span>Upload Church Photo</span></div>
+            <div class="manage-section-body">
+              <form method="POST" id="manageUploadPhotoForm" action="" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="redirect_to" value="dashboard_manage:images">
+
+                <div class="form-group">
+                  <label class="form-label">Photo Files</label>
+                  <input class="form-input" type="file" name="church_images" accept="image/*" multiple required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Caption</label>
+                  <input class="form-input" type="text" name="image_caption">
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn-submit">{{ icons.image_icon(14) }}<span>Upload Photo</span></button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="manage-section" id="manage-section-recognitions">
+            <div class="manage-section-head">{{ icons.award(16) }}<span>Add Heritage Recognition</span></div>
+            <div class="manage-section-body">
+              <form method="POST" id="manageRecognitionForm" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="redirect_to" value="dashboard_manage:recognitions">
+
+                <div class="form-group">
+                  <label class="form-label">Recognition Title</label>
+                  <input class="form-input" type="text" name="recognition_title" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Issuing Body</label>
+                  <input class="form-input" type="text" name="issuing_body">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Year Recognized</label>
+                  <input class="form-input" type="number" name="year_recognized" min="1500" max="2100">
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn-submit">{{ icons.award(14) }}<span>Add Recognition</span></button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="manage-section" id="manage-section-reports">
+            <div class="manage-section-head">{{ icons.reports(16) }}<span>Submit Disaster Report</span></div>
+            <div class="manage-section-body">
+              <form method="POST" action="/admin/submit-report" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="church_id" id="manage_report_church_id">
+                <input type="hidden" name="redirect_to" value="dashboard_manage:reports">
+
+                <div class="manage-two-col form-group">
+                  <div>
+                    <label class="form-label">Hazard Type</label>
+                    <select class="form-select" name="hazard_type_id" required>
+                      <option value="">-- Select Hazard Type --</option>
+                      {% for h in hazard_types %}
+                        <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label">Damage Level</label>
+                    <select class="form-select" name="damage_level">
+                      <option value="">-- Select Level --</option>
+                      <option value="Minor">Minor</option>
+                      <option value="Moderate">Moderate</option>
+                      <option value="Major">Major</option>
+                      <option value="Destroyed">Destroyed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Incident Date</label>
+                  <input class="form-input" type="date" name="incident_date">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Report Description</label>
+                  <textarea class="form-input" name="report_description" rows="4" required style="resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Damage Photos</label>
+                  <input class="form-input" type="file" name="report_images" accept="image/*" multiple>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn-submit">{{ icons.reports(14) }}<span>Submit Report</span></button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="manage-sections">
+
+          <div class="manage-section">
+            <div class="manage-section-head">{{ icons.warning(16) }}<span>Existing Assessments</span></div>
+            <div class="manage-section-body">
+              <div id="manageAssessmentsList" class="manage-record-list"></div>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-head">{{ icons.award(16) }}<span>Existing Recognitions</span></div>
+            <div class="manage-section-body">
+              <div id="manageRecognitionsList" class="manage-record-list"></div>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-head">{{ icons.image_icon(16) }}<span>Existing Gallery Photos</span></div>
+            <div class="manage-section-body">
+              <div id="manageImagesList" class="manage-thumb-grid"></div>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <div class="manage-section-head">{{ icons.reports(16) }}<span>Existing Disaster Reports</span></div>
+            <div class="manage-section-body">
+              <div id="manageReportsList" class="manage-record-list"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="editAssessmentModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.warning(18) }}<span>Edit Hazard Assessment</span></div>
+      </div>
+      <button class="modal-close" onclick="closeEditAssessmentModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" id="editAssessmentForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect_to" value="dashboard_manage:assessments">
+        <div class="form-group">
+          <label class="form-label">Hazard Type</label>
+          <select class="form-select" name="hazard_type_id" id="edit_assessment_hazard_type_id" required>
+            <option value="">-- Select Hazard Type --</option>
+            {% for h in hazard_types %}
+              <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Risk Level</label>
+            <select class="form-select" name="risk_level" id="edit_assessment_risk_level" required>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Assessment Date</label>
+            <input class="form-input" type="date" name="assessment_date" id="edit_assessment_date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks</label>
+          <textarea class="form-input" name="assessment_remarks" id="edit_assessment_remarks" rows="3" style="resize:vertical;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeEditAssessmentModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.edit(14) }}<span>Save Assessment</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editRecognitionModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.award(18) }}<span>Edit Recognition</span></div>
+      </div>
+      <button class="modal-close" onclick="closeEditRecognitionModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" id="editRecognitionForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect_to" value="dashboard_manage:recognitions">
+        <div class="form-group">
+          <label class="form-label">Recognition Title</label>
+          <input class="form-input" type="text" name="recognition_title" id="edit_recognition_title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Issuing Body</label>
+          <input class="form-input" type="text" name="issuing_body" id="edit_recognition_issuing_body">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Recognized</label>
+          <input class="form-input" type="number" name="year_recognized" id="edit_recognition_year" min="1500" max="2100">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeEditRecognitionModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.edit(14) }}<span>Save Recognition</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editImageModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.image_icon(18) }}<span>Edit Image Caption</span></div>
+      </div>
+      <button class="modal-close" onclick="closeEditImageModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" id="editImageForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect_to" value="dashboard_manage:images">
+        <div class="form-group">
+          <label class="form-label">Caption</label>
+          <input class="form-input" type="text" name="image_caption" id="edit_image_caption">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeEditImageModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.edit(14) }}<span>Save Caption</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editReportModal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.reports(18) }}<span>Edit Disaster Report</span></div>
+      </div>
+      <button class="modal-close" onclick="closeEditReportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" id="editReportForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect_to" value="dashboard_manage:reports">
+
+        <div class="form-group">
+          <label class="form-label">Hazard Type</label>
+          <select class="form-select" name="hazard_type_id" id="edit_report_hazard_type_id" required>
+            <option value="">-- Select Hazard Type --</option>
+            {% for h in hazard_types %}
+              <option value="{{ h.hazard_type_id }}">{{ h.hazard_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-row form-group">
+          <div>
+            <label class="form-label">Incident Date</label>
+            <input class="form-input" type="date" name="incident_date" id="edit_report_incident_date">
+          </div>
+          <div>
+            <label class="form-label">Damage Level</label>
+            <select class="form-select" name="damage_level" id="edit_report_damage_level">
+              <option value="">-- Select Level --</option>
+              <option value="Minor">Minor</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Major">Major</option>
+              <option value="Destroyed">Destroyed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Report Status</label>
+          <select class="form-select" name="report_status" id="edit_report_status" required>
+            <option value="Reported">Reported</option>
+            <option value="Under Assessment">Under Assessment</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Report Description</label>
+          <textarea class="form-input" name="report_description" id="edit_report_description" rows="4" required style="resize:vertical;"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeEditReportModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.edit(14) }}<span>Save Report</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="statusModal" class="modal-overlay">
+  <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">{{ icons.reports(18) }}<span>Update Report Status</span></div>
+        <div class="modal-subtitle" id="statusModalSubtitle">Update status for this report</div>
+      </div>
+      <button class="modal-close" onclick="closeStatusModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" id="statusForm" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label">Current Status</label>
+          <div id="currentStatusDisplay" style="padding:10px 14px; border-radius:8px; background:#F2F2F2; font-size:14px; font-weight:600; color:var(--brown-mid);"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Status</label>
+          <select class="form-select" name="report_status" id="newStatusSelect" required>
+            <option value="">-- Select New Status --</option>
+            <option value="Reported">Reported</option>
+            <option value="Under Assessment">Under Assessment</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+        <div style="background:#FAFAFA; border-radius:8px; padding:12px 14px; margin-bottom:18px; border:1px solid #E2E2E2;">
+          <div style="font-size:12px; color:#666; font-weight:600; margin-bottom:6px;">STATUS WORKFLOW</div>
+          <div style="font-size:12px; color:var(--brown-mid);">
+            Reported → initial submission<br>
+            Under Assessment → being evaluated<br>
+            Resolved → fully addressed
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeStatusModal()">Cancel</button>
+          <button type="submit" class="btn-submit">{{ icons.checklist(14) }}<span>Update Status</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const csrfToken = {{ csrf_token()|tojson }};
+</script>
+
+<script id="dashboardChurchData" type="application/json">
+{{ dashboard_data | tojson }}
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let dashboardChurchData = {};
+  try {
+    dashboardChurchData = JSON.parse(document.getElementById('dashboardChurchData').textContent);
+  } catch (e) {
+    dashboardChurchData = {};
+  }
+
+  function setBodyModalOpen(isOpen) {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+
+  function openModal() {
+    document.getElementById('addChurchModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeModal() {
+    document.getElementById('addChurchModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('addChurchModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function openReportModal() {
+    document.getElementById('reportModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('reportModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReportModal();
+  });
+
+  function openAssessmentModal() {
+    document.getElementById('assessmentModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeAssessmentModal() {
+    document.getElementById('assessmentModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('assessmentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAssessmentModal();
+  });
+
+  function riskTag(level) {
+    if (level === 'High') return '<span class="risk-tag tag-high">High</span>';
+    if (level === 'Medium') return '<span class="risk-tag tag-medium">Medium</span>';
+    if (level === 'Low') return '<span class="risk-tag tag-low">Low</span>';
+    return '<span class="risk-tag tag-none">Unassessed</span>';
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function scrollManageSection(section) {
+    const validSections = ['profile', 'assessments', 'images', 'recognitions', 'reports'];
+    const targetSection = validSections.includes(section) ? section : 'profile';
+    const el = document.getElementById('manage-section-' + targetSection);
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }
+
+  function openManageChurchModal(churchId, targetSection = null) {
+    const church = dashboardChurchData[String(churchId)];
+    if (!church) return;
+
+    document.getElementById('manageChurchTitle').textContent = 'Manage: ' + (church.church_name || 'Church');
+
+    document.getElementById('manageProfileForm').action = '/admin/update-church-profile/' + churchId;
+    document.getElementById('manageUploadPhotoForm').action = '/admin/upload-church-image/' + churchId;
+    document.getElementById('manageRecognitionForm').action = '/admin/add-recognition/' + churchId;
+    document.getElementById('manage_assessment_church_id').value = churchId;
+    document.getElementById('manage_report_church_id').value = churchId;
+
+    document.getElementById('manage_church_name').value = church.church_name || '';
+    document.getElementById('manage_municipality_id').value = church.municipality_id || '';
+    document.getElementById('manage_barangay').value = church.barangay || '';
+    document.getElementById('manage_address').value = church.address || '';
+    document.getElementById('manage_date_built').value = church.date_built || '';
+    document.getElementById('manage_monitoring_status').value = church.monitoring_status || 'Active';
+    document.getElementById('manage_latitude').value = church.latitude || '';
+    document.getElementById('manage_longitude').value = church.longitude || '';
+    document.getElementById('manage_historical_background').value = church.historical_background || '';
+    document.getElementById('manage_historical_period').value = church.historical_period || '';
+    document.getElementById('manage_cultural_significance').value = church.cultural_significance || '';
+    document.getElementById('manage_religious_significance').value = church.religious_significance || '';
+    document.getElementById('manage_notable_artifacts').value = church.notable_artifacts || '';
+
+    renderAssessments(church);
+    renderRecognitions(church);
+    renderImages(church);
+    renderReports(church);
+
+    document.getElementById('manageChurchModal').classList.add('active');
+    setBodyModalOpen(true);
+
+    if (targetSection) {
+      scrollManageSection(targetSection);
+    }
+  }
+
+  function closeManageChurchModal() {
+    document.getElementById('manageChurchModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('manageChurchModal').addEventListener('click', function(e) {
+    if (e.target === this) closeManageChurchModal();
+  });
+
+  function renderAssessments(church) {
+    const box = document.getElementById('manageAssessmentsList');
+    const items = church.assessments || [];
+    if (!items.length) {
+      box.innerHTML = '<div class="manage-empty">No assessments recorded yet.</div>';
+      return;
+    }
+
+    box.innerHTML = items.map(a => `
+      <div class="manage-record-card">
+        <div class="manage-record-title">${escapeHtml(a.hazard_name || 'Assessment')}</div>
+        <div class="manage-record-meta">${riskTag(a.risk_level)}${a.assessment_date ? ' · ' + escapeHtml(a.assessment_date) : ''}</div>
+        <div class="manage-record-text">${escapeHtml(a.assessment_remarks || 'No remarks')}</div>
+        <div class="manage-record-actions">
+          <button type="button" class="action-link" onclick='openEditAssessmentModal(${JSON.stringify(a)})'>Edit</button>
+          <form method="POST" action="/admin/delete-assessment/${a.assessment_id}/${church.church_id}" onsubmit="return confirm('Delete this assessment?');">
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
+            <input type="hidden" name="redirect_to" value="dashboard_manage:assessments">
+            <button type="submit" class="action-link" style="color:var(--red-high); border-color:#F2CACA;">Delete</button>
+          </form>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderRecognitions(church) {
+    const box = document.getElementById('manageRecognitionsList');
+    const items = church.recognitions || [];
+    if (!items.length) {
+      box.innerHTML = '<div class="manage-empty">No recognitions recorded yet.</div>';
+      return;
+    }
+
+    box.innerHTML = items.map(r => `
+      <div class="manage-record-card">
+        <div class="manage-record-title">${escapeHtml(r.recognition_title || 'Recognition')}</div>
+        <div class="manage-record-meta">${escapeHtml(r.issuing_body || 'No issuing body')}${r.year_recognized ? ' · ' + escapeHtml(r.year_recognized) : ''}</div>
+        <div class="manage-record-actions">
+          <button type="button" class="action-link" onclick='openEditRecognitionModal(${JSON.stringify(r)}, ${church.church_id})'>Edit</button>
+          <form method="POST" action="/admin/delete-recognition/${r.recognition_id}/${church.church_id}" onsubmit="return confirm('Delete this recognition?');">
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
+            <input type="hidden" name="redirect_to" value="dashboard_manage:recognitions">
+            <button type="submit" class="action-link" style="color:var(--red-high); border-color:#F2CACA;">Delete</button>
+          </form>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderImages(church) {
+    const box = document.getElementById('manageImagesList');
+    const items = church.images || [];
+    if (!items.length) {
+      box.innerHTML = '<div class="manage-empty">No gallery photos uploaded yet.</div>';
+      return;
+    }
+
+    box.innerHTML = items.map(img => `
+      <div class="manage-thumb-card">
+        <img src="/static/${escapeHtml(img.image_path)}" alt="Church photo">
+        <div class="manage-thumb-meta">
+          <div class="manage-thumb-text">${escapeHtml(img.image_caption || 'No caption')}</div>
+          <div class="manage-record-actions">
+            <button type="button" class="action-link" onclick='openEditImageModal(${JSON.stringify(img)}, ${church.church_id})'>Edit</button>
+            <form method="POST" action="/admin/delete-church-image/${img.image_id}/${church.church_id}" onsubmit="return confirm('Delete this photo?');">
+              <input type="hidden" name="csrf_token" value="${csrfToken}">
+              <input type="hidden" name="redirect_to" value="dashboard_manage:images">
+              <button type="submit" class="action-link" style="color:var(--red-high); border-color:#F2CACA;">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderReports(church) {
+    const box = document.getElementById('manageReportsList');
+    const items = church.reports || [];
+    if (!items.length) {
+      box.innerHTML = '<div class="manage-empty">No disaster reports recorded yet.</div>';
+      return;
+    }
+
+    box.innerHTML = items.map(r => `
+      <div class="manage-record-card">
+        <div class="manage-record-title">${escapeHtml(r.hazard_name || 'Report')}</div>
+        <div class="manage-record-meta">${escapeHtml(r.report_status || 'Reported')}${r.incident_date ? ' · Incident: ' + escapeHtml(r.incident_date) : ''}${r.damage_level ? ' · ' + escapeHtml(r.damage_level) : ''}</div>
+        <div class="manage-record-text">${escapeHtml(r.report_description || '')}</div>
+        ${(r.images && r.images.length) ? `
+          <div class="report-image-list">
+            ${r.images.map(img => `
+              <div class="report-thumb-wrap">
+                <img src="/static/${escapeHtml(img.image_path)}" alt="Report image">
+                <form method="POST" action="/admin/delete-report-image/${img.report_image_id}/${r.report_id}/${church.church_id}" onsubmit="return confirm('Delete this report image?');">
+                  <input type="hidden" name="csrf_token" value="${csrfToken}">
+                  <input type="hidden" name="redirect_to" value="dashboard_manage:reports">
+                  <button type="submit" class="action-link" style="color:var(--red-high); border-color:#F2CACA;">Delete</button>
+                </form>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="manage-record-actions">
+          <button type="button" class="action-link" onclick='openEditReportModal(${JSON.stringify(r)}, ${church.church_id})'>Edit</button>
+          <form method="POST" action="/admin/delete-disaster-report/${r.report_id}/${church.church_id}" onsubmit="return confirm('Delete this report?');">
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
+            <input type="hidden" name="redirect_to" value="dashboard_manage:reports">
+            <button type="submit" class="action-link" style="color:var(--red-high); border-color:#F2CACA;">Delete</button>
+          </form>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openEditAssessmentModal(a) {
+    document.getElementById('editAssessmentForm').action = `/admin/update-assessment/${a.assessment_id}/${a.church_id}`;
+    document.getElementById('edit_assessment_hazard_type_id').value = a.hazard_type_id || '';
+    document.getElementById('edit_assessment_risk_level').value = a.risk_level || '';
+    document.getElementById('edit_assessment_date').value = a.assessment_date || '';
+    document.getElementById('edit_assessment_remarks').value = a.assessment_remarks || '';
+    document.getElementById('editAssessmentModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeEditAssessmentModal() {
+    document.getElementById('editAssessmentModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('editAssessmentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditAssessmentModal();
+  });
+
+  function openEditRecognitionModal(r, churchId) {
+    document.getElementById('editRecognitionForm').action = `/admin/update-recognition/${r.recognition_id}/${churchId}`;
+    document.getElementById('edit_recognition_title').value = r.recognition_title || '';
+    document.getElementById('edit_recognition_issuing_body').value = r.issuing_body || '';
+    document.getElementById('edit_recognition_year').value = r.year_recognized || '';
+    document.getElementById('editRecognitionModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeEditRecognitionModal() {
+    document.getElementById('editRecognitionModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('editRecognitionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditRecognitionModal();
+  });
+
+  function openEditImageModal(img, churchId) {
+    document.getElementById('editImageForm').action = `/admin/update-church-image-caption/${img.image_id}/${churchId}`;
+    document.getElementById('edit_image_caption').value = img.image_caption || '';
+    document.getElementById('editImageModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeEditImageModal() {
+    document.getElementById('editImageModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('editImageModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditImageModal();
+  });
+
+  function openEditReportModal(r, churchId) {
+    document.getElementById('editReportForm').action = `/admin/update-disaster-report/${r.report_id}/${churchId}`;
+    document.getElementById('edit_report_hazard_type_id').value = r.hazard_type_id || '';
+    document.getElementById('edit_report_incident_date').value = r.incident_date || '';
+    document.getElementById('edit_report_damage_level').value = r.damage_level || '';
+    document.getElementById('edit_report_status').value = r.report_status || 'Reported';
+    document.getElementById('edit_report_description').value = r.report_description || '';
+    document.getElementById('editReportModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeEditReportModal() {
+    document.getElementById('editReportModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('editReportModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditReportModal();
+  });
+
+  function openStatusModal(reportId, churchName, currentStatus) {
+    document.getElementById('statusForm').action = '/admin/update-report/' + reportId;
+    document.getElementById('statusModalSubtitle').textContent = churchName;
+    document.getElementById('currentStatusDisplay').textContent = currentStatus;
+    document.getElementById('newStatusSelect').value = '';
+    document.getElementById('statusModal').classList.add('active');
+    setBodyModalOpen(true);
+  }
+
+  function closeStatusModal() {
+    document.getElementById('statusModal').classList.remove('active');
+    setBodyModalOpen(false);
+  }
+
+  document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) closeStatusModal();
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const manageChurchId = params.get('manage_church');
+  const manageSection = params.get('manage_section') || 'profile';
+
+  if (manageChurchId) {
+    window.addEventListener('load', function () {
+      openManageChurchModal(Number(manageChurchId), manageSection);
+    });
+  }
+</script>
+{% endblock %}

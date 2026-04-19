@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Heritage Churches of Bohol{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  {% block extra_head %}{% endblock %}
+
+  <style>
+:root {
+  --cream: #FBF6EE;
+  --parchment: #EADCC9;
+
+  --brown-dark: #2C1810;
+  --brown-mid: #6B3D2A;
+  --brown-soft: #8A6A57;
+
+  --terracotta: #C1440E;
+  --terra-soft: #D46A3A;
+
+  --gold: #C9A84C;
+  --gold-light: #E7D39A;
+
+  --green-safe: #2E6B4F;
+  --yellow-med: #B07D10;
+  --red-high: #9B2020;
+
+  --gray-muted: #7A6F66;
+  --shadow: rgba(44, 24, 16, 0.12);
+}
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--cream);
+      color: var(--brown-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .site-header {
+      background-color: var(--brown-dark);
+      background-image: none;
+      padding: 0 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .header-inner {
+      width: min(1850px, calc(100vw - 32px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      gap: 14px;
+      padding: 12px 0;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--gold);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brown-dark);
+      flex-shrink: 0;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .logo-title {
+      font-family: 'Merriweather', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--gold-light);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .desktop-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .admin-nav,
+    .public-nav {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .admin-nav a,
+    .public-nav a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-nav a svg,
+    .public-nav a svg,
+    .mobile-nav a svg,
+    .mobile-logout svg,
+    .mobile-login svg,
+    .btn-logout svg,
+    .btn-login svg {
+      flex-shrink: 0;
+    }
+
+    .admin-nav a:hover,
+    .public-nav a:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .admin-nav a.active,
+    .public-nav a.active {
+      color: var(--gold-light);
+      background: rgba(201,168,76,0.15);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 7px 14px;
+      min-width: 0;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brown-dark);
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .user-role {
+      font-size: 10px;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+    }
+
+    .btn-logout,
+    .btn-login {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-logout:hover,
+    .btn-login:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .mobile-menu {
+      display: none;
+      width: min(1850px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 0 0 14px;
+    }
+
+    .mobile-menu.open {
+      display: block;
+    }
+
+    .mobile-panel {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .mobile-user {
+      margin-bottom: 14px;
+    }
+
+    .mobile-nav {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-nav a,
+    .mobile-logout,
+    .mobile-login {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.88);
+    }
+
+    .mobile-nav a.active,
+    .mobile-logout.active,
+    .mobile-login.active {
+      color: var(--gold-light);
+      background: rgba(201,168,76,0.15);
+      border-color: rgba(201,168,76,0.22);
+    }
+
+    .mobile-logout,
+    .mobile-login {
+      color: #fff;
+      justify-content: center;
+    }
+
+    .flash-container {
+      width: min(1850px, calc(100vw - 32px));
+      margin: 16px auto 0;
+      padding: 0 16px;
+    }
+
+    .flash {
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .flash.success {
+      background: #d4edda;
+      color: #1f5134;
+      border-color: #b8dfc3;
+    }
+
+    .flash.danger {
+      background: #fde8e8;
+      color: #8a1f1f;
+      border-color: #f5c2c2;
+    }
+
+    .flash.warning {
+      background: #fff3cd;
+      color: #8a6b00;
+      border-color: #f2df98;
+    }
+
+    .flash.info {
+      background: #e7f1ff;
+      color: #1f4f8a;
+      border-color: #bdd7ff;
+    }
+
+    .site-footer {
+      background: var(--brown-dark);
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      padding: 18px;
+      font-size: 12px;
+      border-top: 2px solid var(--gold);
+      margin-top: 40px;
+    }
+
+    .site-footer strong {
+      color: var(--gold-light);
+    }
+
+    @media (max-width: 900px) {
+      .desktop-right {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: inline-flex;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-inner,
+      .mobile-menu,
+      .flash-container {
+        width: min(100%, calc(100vw - 24px));
+      }
+
+      .flash-container {
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .site-header,
+      .flash-container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+
+      .header-inner,
+      .mobile-menu,
+      .flash-container {
+        width: min(100%, calc(100vw - 24px));
+      }
+    }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+<body>
+  {% import "_icons.html" as icons %}
+  {% set role_name = session.get('role_name') %}
+  {% set is_admin_view = role_name in ['Super Admin', 'Municipal Admin'] %}
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{% if is_admin_view %}/dashboard{% else %}/{% endif %}" class="logo-group">
+        <div class="logo-icon">{{ icons.church(20) }}</div>
+        <div class="logo-text">
+          <span class="logo-title">Heritage Churches of Bohol</span>
+          <span class="logo-sub">DRRM Information System</span>
+        </div>
+      </a>
+
+      <div class="desktop-right">
+        {% if is_admin_view %}
+          <nav class="admin-nav">
+            <a href="/dashboard" class="{% block nav_dashboard %}{% endblock %}">{{ icons.dashboard(16) }}<span>Dashboard</span></a>
+            <a href="/hazard-map" class="{% block nav_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
+            <a href="/admin/reports" class="{% block nav_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
+            <a href="/admin/analytics" class="{% block nav_analytics %}{% endblock %}">{{ icons.analytics(16) }}<span>Analytics</span></a>
+            {% if role_name == 'Super Admin' %}
+              <a href="/admin/users" class="{% block nav_users %}{% endblock %}">{{ icons.users(16) }}<span>Users</span></a>
+              <a href="/admin/logs" class="{% block nav_logs %}{% endblock %}">{{ icons.logs(16) }}<span>Logs</span></a>
+            {% endif %}
+          </nav>
+
+          <div class="user-chip">
+            <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
+            <div class="user-info">
+              <span class="user-name">{{ session.get('full_name', 'User') }}</span>
+              <span class="user-role">{{ session.get('role_name', 'User') }}</span>
+            </div>
+          </div>
+
+          <a href="/logout" class="btn-logout">{{ icons.logout(16) }}<span>Logout</span></a>
+        {% else %}
+          <nav class="public-nav">
+            <a href="/" class="{% block nav_home %}{% endblock %}">{{ icons.church(16) }}<span>Churches</span></a>
+            <a href="/hazard-map" class="{% block nav_public_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
+            <a href="/reports" class="{% block nav_public_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
+            <a href="/about" class="{% block nav_about %}{% endblock %}">{{ icons.about(16) }}<span>About</span></a>
+          </nav>
+
+          {% if session.get('user_id') %}
+            <a href="/logout" class="btn-logout">{{ icons.logout(16) }}<span>Logout</span></a>
+          {% else %}
+            <a href="/login" class="btn-login">{{ icons.login(16) }}<span>Login</span></a>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">
+        <span id="menuToggleIcon">{{ icons.menu(20) }}</span>
+      </button>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="mobile-panel">
+        {% if is_admin_view %}
+          <div class="mobile-user">
+            <div class="user-chip">
+              <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
+              <div class="user-info">
+                <span class="user-name">{{ session.get('full_name', 'User') }}</span>
+                <span class="user-role">{{ session.get('role_name', 'User') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="mobile-nav">
+            <a href="/dashboard" class="{% block m_nav_dashboard %}{% endblock %}">{{ icons.dashboard(16) }}<span>Dashboard</span></a>
+            <a href="/hazard-map" class="{% block m_nav_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
+            <a href="/admin/reports" class="{% block m_nav_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
+            <a href="/admin/analytics" class="{% block m_nav_analytics %}{% endblock %}">{{ icons.analytics(16) }}<span>Analytics</span></a>
+            {% if role_name == 'Super Admin' %}
+              <a href="/admin/users" class="{% block m_nav_users %}{% endblock %}">{{ icons.users(16) }}<span>Users</span></a>
+              <a href="/admin/logs" class="{% block m_nav_logs %}{% endblock %}">{{ icons.logs(16) }}<span>Logs</span></a>
+            {% endif %}
+          </nav>
+
+          <a href="/logout" class="mobile-logout">{{ icons.logout(16) }}<span>Logout</span></a>
+        {% else %}
+          <nav class="mobile-nav">
+            <a href="/" class="{% block m_nav_home %}{% endblock %}">{{ icons.church(16) }}<span>Churches</span></a>
+            <a href="/hazard-map" class="{% block m_nav_public_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
+            <a href="/reports" class="{% block m_nav_public_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
+            <a href="/about" class="{% block m_nav_about %}{% endblock %}">{{ icons.about(16) }}<span>About</span></a>
+          </nav>
+
+          {% if session.get('user_id') %}
+            <a href="/logout" class="mobile-logout">{{ icons.logout(16) }}<span>Logout</span></a>
+          {% else %}
+            <a href="/login" class="mobile-login">{{ icons.login(16) }}<span>Login</span></a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <main style="flex: 1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <strong>Heritage Churches of Bohol — DRRM Information System</strong><br>
+    Province of Bohol · Disaster Risk Reduction and Management Office
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuToggleIcon = document.getElementById('menuToggleIcon');
+
+    if (menuToggle && mobileMenu && menuToggleIcon) {
+      menuToggle.addEventListener('click', function () {
+        mobileMenu.classList.toggle('open');
+        menuToggleIcon.innerHTML = mobileMenu.classList.contains('open')
+          ? `{{ icons.close(20)|replace('\n', '')|replace("'", "\\'")|safe }}`
+          : `{{ icons.menu(20)|replace('\n', '')|replace("'", "\\'")|safe }}`;
+      });
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
