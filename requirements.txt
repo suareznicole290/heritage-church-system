@@ -6,3 +6,4 @@ Pillow
 gunicorn
 mysqlclient
 Werkzeug
+cloudinary
