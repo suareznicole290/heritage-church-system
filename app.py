@@ -14,12 +14,13 @@ from PIL import Image
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'heritage_churches_secret_2026'
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'heritage_churches_bohol_nicole1'
-app.config['MYSQL_DB'] = 'heritage_church_db'
-app.config['MYSQL_PORT'] = 3306
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret')
+
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
+app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', 3306))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB upload limit
 
