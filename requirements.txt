@@ -1,0 +1,8 @@
+Flask
+Flask-MySQLdb
+PyMySQL
+Flask-WTF
+Pillow
+gunicorn
+mysqlclient
+Werkzeug
