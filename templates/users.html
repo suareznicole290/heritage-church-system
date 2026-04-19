@@ -5,6 +5,401 @@
 {% block nav_users %}active{% endblock %}
 {% block m_nav_users %}active{% endblock %}
 
+{% block extra_styles %}
+.page-header {
+  background: var(--brown-dark);
+  padding: 32px 1.25rem 28px;
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+}
+
+.page-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.page-title {
+  font-family: 'Merriweather', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-title svg {
+  width: 24px;
+  height: 24px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.82);
+  margin-top: 6px;
+  line-height: 1.7;
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--cream);
+  color: var(--brown-dark);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--parchment);
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(44,24,16,0.10);
+}
+
+.btn-primary:hover {
+  background: #f7efe2;
+  border-color: var(--gold);
+  color: var(--brown-dark);
+  transform: translateY(-1px);
+}
+
+.main-content {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 16px 20px;
+  background: #FFFFFF;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.data-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gray-muted);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--parchment);
+  background: var(--cream);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--parchment);
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--brown-dark);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+  background: #FDF9F3;
+}
+
+.action-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brown-mid);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--parchment);
+  transition: all 0.2s;
+  background: #fff;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: var(--cream);
+  color: var(--terracotta);
+  border-color: var(--terracotta);
+}
+
+.action-btn-danger {
+  color: var(--red-high);
+  border-color: #F2CACA;
+}
+
+.action-btn-danger:hover {
+  background: #fff5f5;
+  color: var(--red-high);
+  border-color: var(--red-high);
+}
+
+.status-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.status-active {
+  background: #DDEFE0;
+  color: var(--green-safe);
+}
+
+.status-inactive {
+  background: #FDE8E8;
+  color: var(--red-high);
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(44,24,16,0.45);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.user-modal-box {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 720px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(44, 24, 16, 0.22);
+  border-top: 4px solid var(--gold);
+}
+
+.modal-header-clean {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 18px;
+  background: linear-gradient(180deg, #fffdf9 0%, #f8f2e8 100%);
+  border-bottom: 1px solid var(--parchment);
+}
+
+.modal-title-clean {
+  font-family: 'Merriweather', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 6px;
+}
+
+.modal-subtitle-clean {
+  font-size: 13px;
+  color: var(--gray-muted);
+  line-height: 1.6;
+}
+
+.modal-close-btn {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--parchment);
+  background: #fff;
+  color: var(--brown-mid);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: var(--cream);
+  border-color: var(--gold);
+  color: var(--terracotta);
+}
+
+.user-form {
+  padding: 24px 28px 28px;
+  background: #fff;
+}
+
+.user-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-field-full {
+  grid-column: 1 / -1;
+}
+
+.form-label-clean {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gray-muted);
+}
+
+.form-input-clean,
+.form-select-clean {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid #d8d2ca;
+  border-radius: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: var(--brown-dark);
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.form-input-clean:focus,
+.form-select-clean:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.14);
+  background: #fffefb;
+}
+
+.form-input-clean::placeholder {
+  color: #a69b91;
+}
+
+.modal-actions-clean {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #eee2d2;
+}
+
+.btn-modal-secondary,
+.btn-modal-primary {
+  min-width: 110px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-secondary {
+  background: #fff;
+  color: var(--brown-mid);
+  border: 1px solid #d8d2ca;
+}
+
+.btn-modal-secondary:hover {
+  background: #faf7f2;
+  border-color: var(--gold);
+}
+
+.btn-modal-primary {
+  background: linear-gradient(180deg, var(--terracotta), #a63608);
+  color: #fff;
+  border: none;
+  box-shadow: 0 10px 20px rgba(193, 68, 14, 0.18);
+}
+
+.btn-modal-primary:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, var(--terra-soft), var(--terracotta));
+}
+
+@media (max-width: 900px) {
+  .page-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-modal-box {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .modal-header-clean,
+  .user-form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .user-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field-full {
+    grid-column: auto;
+  }
+
+  .modal-actions-clean {
+    flex-direction: column-reverse;
+  }
+
+  .btn-modal-secondary,
+  .btn-modal-primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header, .main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .page-header {
+    padding-top: 26px;
+    padding-bottom: 22px;
+  }
+
+  .main-content {
+    width: calc(100vw - 16px);
+  }
+}
+{% endblock %}
+
 {% block content %}
 {% import "_icons.html" as icons %}
 
@@ -14,122 +409,231 @@
       <div class="page-title">{{ icons.users(24) }}<span>User Management</span></div>
       <div class="page-subtitle">Manage system accounts and permissions</div>
     </div>
-    <button class="btn-primary" onclick="openAddModal()">
-      {{ icons.plus(14) }} Add User
+    <button class="btn-primary" type="button" onclick="openAddModal()">
+      {{ icons.plus(14) }} <span>Add User</span>
     </button>
   </div>
 </section>
 
 <main class="main-content">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role_name }}</td>
+          <td>
+            <span class="status-chip {% if u.account_status == 'active' %}status-active{% else %}status-inactive{% endif %}">
+              {{ u.account_status }}
+            </span>
+          </td>
+          <td>
+            {% if u.user_id != session['user_id'] %}
+            <div class="action-group">
+              <form method="POST" action="/admin/users/toggle/{{ u.user_id }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="action-btn" type="submit">
+                  {% if u.account_status == 'active' %}Deactivate{% else %}Activate{% endif %}
+                </button>
+              </form>
 
-```
-<tbody>
-  {% for u in users %}
-  <tr>
-    <td>{{ u.full_name }}</td>
-    <td>{{ u.username }}</td>
-    <td>{{ u.email }}</td>
-    <td>{{ u.role_name }}</td>
-    <td>{{ u.account_status }}</td>
+              <button
+                class="action-btn"
+                type="button"
+                onclick="openEditModal(
+                  '{{ u.user_id }}',
+                  '{{ u.full_name|e }}',
+                  '{{ u.username|e }}',
+                  '{{ u.email|e }}',
+                  '{{ u.role_id }}',
+                  '{{ u.account_status }}'
+                )">
+                Edit
+              </button>
 
-    <td>
-      {% if u.user_id != session['user_id'] %}
-
-      <!-- Toggle -->
-      <form method="POST" action="/admin/users/toggle/{{ u.user_id }}" style="display:inline;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit">
-          {% if u.account_status == 'active' %}Deactivate{% else %}Activate{% endif %}
-        </button>
-      </form>
-
-      <!-- Delete (FIXED) -->
-      <form method="POST"
-            action="/admin/users/delete/{{ u.user_id }}"
-            onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.');"
-            style="display:inline;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit">Delete</button>
-      </form>
-
-      {% else %}
-      <span>You</span>
-      {% endif %}
-    </td>
-  </tr>
-  {% endfor %}
-</tbody>
-```
-
-  </table>
+              <form method="POST"
+                    action="/admin/users/delete/{{ u.user_id }}"
+                    onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.');"
+                    style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="action-btn action-btn-danger" type="submit">Delete</button>
+              </form>
+            </div>
+            {% else %}
+            <span>You</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </main>
 
-<!-- ADD USER MODAL -->
-
 <div id="addUserModal" class="modal-overlay">
-  <div class="modal-box">
-    <form method="POST" action="/admin/users/add">
+  <div class="user-modal-box">
+    <div class="modal-header-clean">
+      <div>
+        <div class="modal-title-clean">Add User</div>
+        <div class="modal-subtitle-clean">Create a new system account and assign permissions.</div>
+      </div>
+      <button class="modal-close-btn" type="button" onclick="closeAddModal()">✕</button>
+    </div>
+
+    <form method="POST" action="/admin/users/add" class="user-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-```
-  <input type="text" name="full_name" placeholder="Full Name" required>
-  <input type="text" name="username" placeholder="Username" required>
-  <input type="email" name="email" placeholder="Email" required>
-  <input type="password" name="password" placeholder="Password" required>
+      <div class="user-form-grid">
+        <div class="form-field form-field-full">
+          <label class="form-label-clean">Full Name</label>
+          <input class="form-input-clean" type="text" name="full_name" placeholder="Enter full name" required>
+        </div>
 
-  <select name="role_id" required>
-    {% for r in roles %}
-    <option value="{{ r.role_id }}">{{ r.role_name }}</option>
-    {% endfor %}
-  </select>
+        <div class="form-field">
+          <label class="form-label-clean">Username</label>
+          <input class="form-input-clean" type="text" name="username" placeholder="Enter username" required>
+        </div>
 
-  <button type="submit">Add User</button>
-</form>
-```
+        <div class="form-field">
+          <label class="form-label-clean">Email</label>
+          <input class="form-input-clean" type="email" name="email" placeholder="Enter email address" required>
+        </div>
 
+        <div class="form-field">
+          <label class="form-label-clean">Password</label>
+          <input class="form-input-clean" type="password" name="password" placeholder="Create password" required>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label-clean">Role</label>
+          <select class="form-select-clean" name="role_id" required>
+            {% for r in roles %}
+            <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions-clean">
+        <button class="btn-modal-secondary" type="button" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-modal-primary" type="submit">Add User</button>
+      </div>
+    </form>
   </div>
 </div>
-
-<!-- EDIT USER MODAL -->
 
 <div id="editUserModal" class="modal-overlay">
-  <div class="modal-box">
-    <form method="POST" id="editUserForm">
+  <div class="user-modal-box">
+    <div class="modal-header-clean">
+      <div>
+        <div class="modal-title-clean">Edit User</div>
+        <div class="modal-subtitle-clean">Update account information and access level.</div>
+      </div>
+      <button class="modal-close-btn" type="button" onclick="closeEditModal()">✕</button>
+    </div>
+
+    <form method="POST" id="editUserForm" class="user-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-```
-  <input type="text" name="full_name" id="edit_full_name" required>
-  <input type="text" name="username" id="edit_username" required>
-  <input type="email" name="email" id="edit_email" required>
-  <input type="password" name="password" id="edit_password">
+      <div class="user-form-grid">
+        <div class="form-field form-field-full">
+          <label class="form-label-clean">Full Name</label>
+          <input class="form-input-clean" type="text" name="full_name" id="edit_full_name" required>
+        </div>
 
-  <select name="role_id" id="edit_role_id" required>
-    {% for r in roles %}
-    <option value="{{ r.role_id }}">{{ r.role_name }}</option>
-    {% endfor %}
-  </select>
+        <div class="form-field">
+          <label class="form-label-clean">Username</label>
+          <input class="form-input-clean" type="text" name="username" id="edit_username" required>
+        </div>
 
-  <select name="account_status" id="edit_account_status">
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-  </select>
+        <div class="form-field">
+          <label class="form-label-clean">Email</label>
+          <input class="form-input-clean" type="email" name="email" id="edit_email" required>
+        </div>
 
-  <button type="submit">Save</button>
-</form>
-```
+        <div class="form-field">
+          <label class="form-label-clean">Password</label>
+          <input class="form-input-clean" type="password" name="password" id="edit_password" placeholder="Leave blank to keep current password">
+        </div>
 
+        <div class="form-field">
+          <label class="form-label-clean">Role</label>
+          <select class="form-select-clean" name="role_id" id="edit_role_id" required>
+            {% for r in roles %}
+            <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label-clean">Account Status</label>
+          <select class="form-select-clean" name="account_status" id="edit_account_status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions-clean">
+        <button class="btn-modal-secondary" type="button" onclick="closeEditModal()">Cancel</button>
+        <button class="btn-modal-primary" type="submit">Save Changes</button>
+      </div>
+    </form>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
+<script>
+function openAddModal() {
+  document.getElementById('addUserModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAddModal() {
+  document.getElementById('addUserModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function openEditModal(userId, fullName, username, email, roleId, accountStatus) {
+  const form = document.getElementById('editUserForm');
+  form.action = '/admin/users/update/' + userId;
+
+  document.getElementById('edit_full_name').value = fullName;
+  document.getElementById('edit_username').value = username;
+  document.getElementById('edit_email').value = email;
+  document.getElementById('edit_password').value = '';
+  document.getElementById('edit_role_id').value = roleId;
+  document.getElementById('edit_account_status').value = accountStatus;
+
+  document.getElementById('editUserModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+  document.getElementById('editUserModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('addUserModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
+
+document.getElementById('editUserModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+</script>
 {% endblock %}
