@@ -251,6 +251,19 @@
     flex-direction: column;
   }
 
+  .main-content {
+    gap: 16px;
+  }
+
+  .map-card,
+  .legend-card {
+    border-radius: 12px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
   #map {
     height: 400px;
   }
@@ -327,7 +340,7 @@
 {% block extra_scripts %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const churches = {{ churches | tojson }};
+  const churches = {{ churches | tojson | safe }};
   const riskFilter = document.getElementById('riskFilter');
   const municipalityFilter = document.getElementById('municipalityFilter');
   const isAdminView = {{ is_admin_view | tojson }};
@@ -342,6 +355,15 @@
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
 
   function markerColor(risk) {
     if (risk === 'High') return '#c0392b';
@@ -435,12 +457,12 @@
       }).addTo(map);
 
       const popupHtml = `
-        <div class="popup-title">${church.church_name}</div>
+        <div class="popup-title">${escapeHtml(church.church_name)}</div>
         <div class="popup-meta">
-          ${church.municipality_name}, Bohol<br>
-          Barangay ${church.barangay || '—'}<br>
-          Risk Level: ${risk}<br>
-          Status: ${church.monitoring_status || '—'}
+          ${escapeHtml(church.municipality_name)}, Bohol<br>
+          Barangay ${escapeHtml(church.barangay || '—')}<br>
+          Risk Level: ${escapeHtml(risk)}<br>
+          Status: ${escapeHtml(church.monitoring_status || '—')}
         </div>
         <a class="popup-link" href="/church/${church.church_id}">View church details →</a>
       `;
@@ -461,8 +483,8 @@
     }, 100);
   }
 
-  riskFilter.addEventListener('change', renderMarkers);
-  municipalityFilter.addEventListener('change', renderMarkers);
+  if (riskFilter) riskFilter.addEventListener('change', renderMarkers);
+  if (municipalityFilter) municipalityFilter.addEventListener('change', renderMarkers);
 
   populateMunicipalityFilter();
   renderMarkers();
