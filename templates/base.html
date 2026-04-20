@@ -42,6 +42,7 @@
 
     html, body {
       min-height: 100%;
+      overflow-x: hidden;
     }
 
     body {
@@ -51,6 +52,13 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    iframe {
+      max-width: 100%;
     }
 
     .site-header {
@@ -81,6 +89,7 @@
       text-decoration: none;
       min-width: 0;
       flex-shrink: 1;
+      max-width: 100%;
     }
 
     .logo-icon {
@@ -112,6 +121,7 @@
       font-weight: 700;
       color: #fff;
       line-height: 1.2;
+      word-break: break-word;
     }
 
     .logo-sub {
@@ -120,6 +130,8 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       font-weight: 500;
+      line-height: 1.2;
+      word-break: break-word;
     }
 
     .desktop-right {
@@ -336,6 +348,7 @@
       font-size: 13px;
       font-weight: 500;
       border: 1px solid transparent;
+      word-break: break-word;
     }
 
     .flash.success {
@@ -383,6 +396,51 @@
 
       .menu-toggle {
         display: inline-flex;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+      }
+
+      .site-header {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+
+      .header-inner {
+        width: 100%;
+        min-height: 64px;
+        gap: 10px;
+        padding: 10px 0;
+      }
+
+      .logo-group {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .logo-icon {
+        width: 34px;
+        height: 34px;
+      }
+
+      .logo-title {
+        font-size: 14px;
+      }
+
+      .logo-sub {
+        font-size: 10px;
+        letter-spacing: 0.8px;
+      }
+
+      .mobile-menu {
+        width: 100%;
+        margin: 0;
+        padding: 0 0 12px;
+      }
+
+      .mobile-panel {
+        border-radius: 12px;
+        padding: 12px;
       }
     }
 
@@ -395,6 +453,16 @@
 
       .flash-container {
         padding: 0;
+      }
+
+      main,
+      .main-content,
+      .hero-inner,
+      .page-header-inner,
+      .church-hero-inner,
+      .main-layout {
+        max-width: 100%;
+        min-width: 0;
       }
     }
 
@@ -409,6 +477,51 @@
       .mobile-menu,
       .flash-container {
         width: min(100%, calc(100vw - 24px));
+      }
+
+      .header-inner {
+        gap: 8px;
+      }
+
+      .logo-group {
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+      }
+
+      .logo-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .logo-title {
+        font-size: 13px;
+        line-height: 1.15;
+      }
+
+      .logo-sub {
+        font-size: 9px;
+        letter-spacing: 0.7px;
+      }
+
+      .menu-toggle {
+        width: 44px;
+        height: 44px;
+      }
+
+      .mobile-nav a,
+      .mobile-logout,
+      .mobile-login {
+        padding: 10px 11px;
+        font-size: 13px;
+      }
+
+      .site-footer {
+        padding: 16px 12px;
       }
     }
 
@@ -526,7 +639,7 @@
     {% endwith %}
   </div>
 
-  <main style="flex: 1;">
+  <main style="flex: 1; min-width: 0;">
     {% block content %}{% endblock %}
   </main>
 
