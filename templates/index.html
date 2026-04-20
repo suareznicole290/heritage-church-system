@@ -488,10 +488,12 @@
       <div class="card-main">
         <div class="card-image-wrap">
           {% if church.image_path %}
+            {% set img_path = church.image_path %}
+            {% set img_src = img_path if img_path.startswith('http') else url_for('static', filename=img_path) %}
             <img
               class="card-image"
-              src="{{ url_for('static', filename=church.image_path) }}"
-              alt="{{ church.church_name }}">
+              src="{{ img_src }}"
+              alt="{{ church.church_name}}">
           {% else %}
             <div class="card-image-placeholder">
               {{ icons.church(56) }}
