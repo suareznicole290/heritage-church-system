@@ -1221,7 +1221,7 @@
               </span>
               {% if r.report_status != 'Resolved' %}
               <button class="card-link" style="background:none; border:none; font-size:11px; cursor:pointer; color:var(--brown-mid);"
-                onclick="openStatusModal({{ r.report_id }}, '{{ r.church_name|e }}', '{{ r.report_status }}')">
+                onclick="openStatusModal({{ r.report_id }}, '{{ r.church_name|e }}', '{{ r.report_status|e }}')">
                 <span>Update ↓</span>
               </button>
               {% endif %}
@@ -1968,7 +1968,7 @@
 </script>
 
 <script id="dashboardChurchData" type="application/json">
-{{ dashboard_data | tojson }}
+{{ dashboard_data | tojson | safe }}
 </script>
 {% endblock %}
 
@@ -2104,7 +2104,7 @@
 
   function renderAssessments(church) {
     const box = document.getElementById('manageAssessmentsList');
-    const items = church.assessments || [];
+    const items = Array.isArray(church.assessments) ? church.assessments : [];
     if (!items.length) {
       box.innerHTML = '<div class="manage-empty">No assessments recorded yet.</div>';
       return;
@@ -2235,9 +2235,12 @@
     setBodyModalOpen(false);
   }
 
-  document.getElementById('editAssessmentModal').addEventListener('click', function(e) {
+  const editAssessmentModal = document.getElementById('editAssessmentModal');
+if (editAssessmentModal) {
+  editAssessmentModal.addEventListener('click', function(e) {
     if (e.target === this) closeEditAssessmentModal();
   });
+}
 
   function openEditRecognitionModal(r, churchId) {
     document.getElementById('editRecognitionForm').action = `/admin/update-recognition/${r.recognition_id}/${churchId}`;
@@ -2253,9 +2256,12 @@
     setBodyModalOpen(false);
   }
 
-  document.getElementById('editRecognitionModal').addEventListener('click', function(e) {
+  const editRecognitionModal = document.getElementById('editRecognitionModal');
+  if (editRecognitionModal) {
+    editRecognitionModal.addEventListener('click', function(e) {
     if (e.target === this) closeEditRecognitionModal();
   });
+}
 
   function openEditImageModal(img, churchId) {
     document.getElementById('editImageForm').action = `/admin/update-church-image-caption/${img.image_id}/${churchId}`;
@@ -2269,9 +2275,12 @@
     setBodyModalOpen(false);
   }
 
-  document.getElementById('editImageModal').addEventListener('click', function(e) {
+  const editImageModal = document.getElementById('editImageModal');
+  if (editImageModal) {
+    editImageModal.addEventListener('click', function(e) {
     if (e.target === this) closeEditImageModal();
   });
+}
 
   function openEditReportModal(r, churchId) {
     document.getElementById('editReportForm').action = `/admin/update-disaster-report/${r.report_id}/${churchId}`;
@@ -2289,9 +2298,12 @@
     setBodyModalOpen(false);
   }
 
-  document.getElementById('editReportModal').addEventListener('click', function(e) {
+  const editReportModal = document.getElementById('editReportModal');
+  if (editReportModal) {
+    editReportModal.addEventListener('click', function(e) {
     if (e.target === this) closeEditReportModal();
   });
+}
 
   function openStatusModal(reportId, churchName, currentStatus) {
     document.getElementById('statusForm').action = '/admin/update-report/' + reportId;
@@ -2307,10 +2319,12 @@
     setBodyModalOpen(false);
   }
 
-  document.getElementById('statusModal').addEventListener('click', function(e) {
+  const statusModal = document.getElementById('statusModal');
+  if (statusModal) {
+    statusModal.addEventListener('click', function(e) {
     if (e.target === this) closeStatusModal();
   });
-
+}
   const params = new URLSearchParams(window.location.search);
   const manageChurchId = params.get('manage_church');
   const manageSection = params.get('manage_section') || 'profile';
