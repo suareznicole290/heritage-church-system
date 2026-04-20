@@ -2071,7 +2071,15 @@ def delete_church_image(image_id, church_id):
 @app.route('/submit-public-report', methods=['POST'])
 def submit_public_report():
     if 'user_id' not in session or session.get('role_name') != 'Public User':
-        flash('Please log in as a Public User to submit a report.', 'warning')
+        session['pending_public_report'] = {
+            'church_id': request.form.get('church_id', ''),
+            'hazard_type_id': request.form.get('hazard_type_id', ''),
+            'incident_date': request.form.get('incident_date', ''),
+            'damage_level': request.form.get('damage_level', ''),
+            'report_description': request.form.get('report_description', '').strip()
+        }
+
+        flash('Please log in or sign up first. Your report details were saved, but you will need to re-attach any photo uploads.', 'warning')
         return redirect(url_for('public_login'))
 
     church_id = request.form.get('church_id')
@@ -2115,6 +2123,8 @@ def submit_public_report():
 
         mysql.connection.commit()
         cur.close()
+
+        session.pop('pending_public_report', None)
 
         flash('Your report has been submitted successfully and is now pending review.', 'success')
 
