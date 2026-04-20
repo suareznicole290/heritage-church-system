@@ -350,6 +350,8 @@
 .badge-reported { background: #fde8e8; color: var(--terracotta); }
 .badge-assessment { background: #fef3cd; color: var(--yellow-med); }
 .badge-resolved { background: #d4edda; color: var(--green-safe); }
+.badge-pending { background: #fff3cd; color: #856404; }
+.badge-validated { background: #fde8e8; color: var(--terracotta); }
 
 .damage-pill {
   display: inline-block;
@@ -785,10 +787,9 @@
               <div class="report-toggle-right">
                 <span class="status-badge
                   {% if report.report_status == 'Resolved' %}badge-resolved
-                  {% elif report.report_status == 'Under Assessment' %}
-                    badge-assessment
-                  {% elif report.report_status == 'Reported - Validated' %}
-                    badge-reported
+                  {% elif report.report_status == 'Under Assessment' %}badge-assessment
+                  {% elif report.report_status == 'Reported - Validated' %}badge-validated
+                  {% elif report.report_status == 'Pending Validation' %}badge-pending
                   {% else %}badge-reported{% endif %}">
                   {{ report.report_status }}
                 </span>
