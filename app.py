@@ -13,6 +13,9 @@ from flask_wtf.csrf import CSRFProtect
 from PIL import Image
 import cloudinary
 import cloudinary.uploader
+from flask_mail import Mail, Message
+import random
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -26,6 +29,13 @@ app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', 3306))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB upload limit
 
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+
 app.config['MYSQL_SSL'] = {'ssl': {}}
 
 cloudinary.config(
@@ -36,6 +46,7 @@ cloudinary.config(
 
 csrf = CSRFProtect(app)
 mysql = MySQL(app)
+mail = Mail(app)
 
 def redirect_after_church_action(church_id, redirect_to=''):
     if redirect_to and redirect_to.startswith('dashboard_manage'):
@@ -57,6 +68,27 @@ def is_valid_image(file):
     except Exception:
         return False
 
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+
+def send_verification_email(recipient_email, otp):
+    msg = Message(
+        subject='Verify Your Email - Heritage Churches of Bohol',
+        recipients=[recipient_email]
+    )
+    msg.body = f"""Hello,
+
+Your verification code is: {otp}
+
+This code will expire in 10 minutes.
+
+If you did not request this, please ignore this email.
+
+Heritage Churches of Bohol
+DRRM Information System
+"""
+    mail.send(msg)
 # ─── Upload Config ────────────────────────────────────────────────────────────
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 REPORT_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'reports')
@@ -240,7 +272,9 @@ def login():
         cur.close()
 
         if user and check_password_hash(user['password_hash'], password):
-            if user.get('account_status') == 'inactive':
+            if not user.get('email_verified'):
+                error = 'Your email is not yet verified. Please contact the administrator.'
+            elif user.get('account_status') == 'inactive':
                 error = 'Your account is inactive. Please contact the administrator.'
             else:
                 session['user_id'] = user['user_id']
@@ -267,6 +301,60 @@ def login():
 
     return render_template('login.html', error=error)
 
+#-------------public log-in------------
+@app.route('/public-login', methods=['GET', 'POST'])
+def public_login():
+    if 'user_id' in session:
+        if session.get('role_name') in ('Super Admin', 'Municipal Admin'):
+            return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT u.*, r.role_name
+                FROM users u
+                JOIN roles r ON u.role_id = r.role_id
+                WHERE u.email = %s AND r.role_name = %s
+            """, (email, 'Public User'))
+            user = cur.fetchone()
+            cur.close()
+
+            if not user:
+                flash('Invalid email or password.', 'danger')
+                return render_template('public_login.html')
+
+            if not user.get('email_verified'):
+                flash('Please verify your email before logging in.', 'warning')
+                session['pending_verification_email'] = email
+                return redirect(url_for('verify_email'))
+
+            if user.get('account_status') != 'active':
+                flash('Your account is inactive.', 'danger')
+                return render_template('public_login.html')
+
+            if not check_password_hash(user['password_hash'], password):
+                flash('Invalid email or password.', 'danger')
+                return render_template('public_login.html')
+
+            session['user_id'] = user['user_id']
+            session['username'] = user['username']
+            session['full_name'] = user['full_name']
+            session['role_name'] = user['role_name']
+            session['municipality_id'] = user['municipality_id']
+
+            flash('Logged in successfully.', 'success')
+            return redirect(url_for('public_reports'))
+
+        except Exception as e:
+            print('PUBLIC LOGIN ERROR:', e)
+            flash('Unable to log in right now.', 'danger')
+
+    return render_template('public_login.html')
 
 # ─── Logout ───────────────────────────────────────────────────────────────────
 @app.route('/logout')
@@ -287,7 +375,166 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
+#-----------Sign-up---------
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
 
+        if not full_name or not username or not email or not password:
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('signup.html')
+
+        try:
+            cur = mysql.connection.cursor()
+
+            cur.execute("""
+                SELECT user_id
+                FROM users
+                WHERE username = %s OR email = %s
+            """, (username, email))
+            existing_user = cur.fetchone()
+
+            if existing_user:
+                cur.close()
+                flash('Username or email already exists.', 'danger')
+                return render_template('signup.html')
+
+            cur.execute("""
+                SELECT role_id
+                FROM roles
+                WHERE role_name = %s
+            """, ('Public User',))
+            public_role = cur.fetchone()
+
+            if not public_role:
+                cur.close()
+                flash('Public User role not found. Please contact the administrator.', 'danger')
+                return render_template('signup.html')
+
+            otp = generate_otp()
+            expiry = datetime.now() + timedelta(minutes=10)
+            password_hash = generate_password_hash(password)
+
+            cur.execute("""
+                INSERT INTO users (
+                    full_name,
+                    username,
+                    email,
+                    password_hash,
+                    role_id,
+                    municipality_id,
+                    account_status,
+                    email_verified,
+                    verification_code,
+                    verification_expiry
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                full_name,
+                username,
+                email,
+                password_hash,
+                public_role['role_id'],
+                None,
+                'inactive',
+                0,
+                otp,
+                expiry
+            ))
+            mysql.connection.commit()
+            cur.close()
+
+            send_verification_email(email, otp)
+            session['pending_verification_email'] = email
+
+            flash('Account created. Please check your email for the verification code.', 'success')
+            return redirect(url_for('verify_email'))
+
+        except Exception as e:
+            print('SIGNUP ERROR:', e)
+            flash('Unable to create account right now. Please try again.', 'danger')
+
+    return render_template('signup.html')
+
+#-----------public - logout----------
+@app.route('/public-logout')
+def public_logout():
+    if session.get('role_name') == 'Public User':
+        session.clear()
+        flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+#---------------verify-email-------------
+@app.route('/verify-email', methods=['GET', 'POST'])
+def verify_email():
+    email = session.get('pending_verification_email')
+
+    if not email:
+        flash('No pending verification found. Please sign up first.', 'warning')
+        return redirect(url_for('signup'))
+
+    if request.method == 'POST':
+        otp_input = request.form.get('otp', '').strip()
+
+        if not otp_input:
+            flash('Please enter the verification code.', 'danger')
+            return render_template('verify_email.html', email=email)
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT user_id, verification_code, verification_expiry, email_verified
+                FROM users
+                WHERE email = %s
+            """, (email,))
+            user = cur.fetchone()
+
+            if not user:
+                cur.close()
+                flash('Account not found.', 'danger')
+                return redirect(url_for('signup'))
+
+            if user['email_verified']:
+                cur.close()
+                session.pop('pending_verification_email', None)
+                flash('Your email is already verified. You can now log in.', 'info')
+                return redirect(url_for('public_login'))
+
+            expiry = user['verification_expiry']
+            if expiry and datetime.now() > expiry:
+                cur.close()
+                flash('Verification code expired. Please sign up again or request a new code later.', 'danger')
+                return render_template('verify_email.html', email=email)
+
+            if user['verification_code'] != otp_input:
+                cur.close()
+                flash('Invalid verification code.', 'danger')
+                return render_template('verify_email.html', email=email)
+
+            cur.execute("""
+                UPDATE users
+                SET email_verified = 1,
+                    account_status = 'active',
+                    verification_code = NULL,
+                    verification_expiry = NULL,
+                    verified_at = NOW()
+                WHERE email = %s
+            """, (email,))
+            mysql.connection.commit()
+            cur.close()
+
+            session.pop('pending_verification_email', None)
+            flash('Email verified successfully. You can now log in.', 'success')
+            return redirect(url_for('public_login'))
+
+        except Exception as e:
+            print('VERIFY EMAIL ERROR:', e)
+            flash('Unable to verify email right now.', 'danger')
+
+    return render_template('verify_email.html', email=email)
 # ─── Admin Dashboard ──────────────────────────────────────────────────────────
 @app.route('/dashboard')
 @admin_required
@@ -1823,6 +2070,10 @@ def delete_church_image(image_id, church_id):
 #_______Submit Public Report________
 @app.route('/submit-public-report', methods=['POST'])
 def submit_public_report():
+    if 'user_id' not in session or session.get('role_name') != 'Public User':
+        flash('Please log in as a Public User to submit a report.', 'warning')
+        return redirect(url_for('public_login'))
+
     church_id = request.form.get('church_id')
     hazard_type_id = request.form.get('hazard_type_id')
     incident_date = request.form.get('incident_date') or None
@@ -1842,13 +2093,14 @@ def submit_public_report():
                 (church_id, hazard_type_id, incident_date,
                  report_description, damage_level,
                  report_status, reported_by)
-            VALUES (%s, %s, %s, %s, %s, 'Pending Validation', NULL)
+            VALUES (%s, %s, %s, %s, %s, 'Pending Validation', %s)
         """, (
             church_id,
             hazard_type_id,
             incident_date,
             report_description,
-            damage_level
+            damage_level,
+            session.get('user_id')
         ))
         mysql.connection.commit()
 
