@@ -1205,7 +1205,11 @@
         {% if recent_reports %}
           {% for r in recent_reports %}
           <div class="report-item">
-            <div class="report-dot {% if r.report_status == 'Resolved' %}dot-resolved{% elif r.report_status == 'Under Assessment' %}dot-assessing{% else %}dot-pending{% endif %}"></div>
+           <div class="report-dot
+              {% if r.report_status == 'Resolved' %}dot-resolved
+              {% elif r.report_status in ['Under Assessment', 'Reported - Validated'] %}dot-assessing
+              {% else %}dot-pending{% endif %}">
+            </div>
             <div class="report-info">
               <div class="report-church">{{ r.church_name }}</div>
               <div class="report-meta">
@@ -1216,7 +1220,10 @@
               </div>
             </div>
             <div class="report-side">
-              <span class="status-chip {% if r.report_status == 'Resolved' %}chip-resolved{% elif r.report_status == 'Under Assessment' %}chip-assessing{% else %}chip-pending{% endif %}">
+             <span class="status-chip
+                {% if r.report_status == 'Resolved' %}chip-resolved
+                {% elif r.report_status in ['Under Assessment', 'Reported - Validated'] %}chip-assessing
+                {% else %}chip-pending{% endif %}">
                 {{ r.report_status }}
               </span>
               {% if r.report_status != 'Resolved' %}
@@ -1901,6 +1908,8 @@
         <div class="form-group">
           <label class="form-label">Report Status</label>
           <select class="form-select" name="report_status" id="edit_report_status" required>
+            <option value="Pending Validation">Pending Validation</option>
+            <option value="Reported - Validated">Reported - Validated</option>
             <option value="Reported">Reported</option>
             <option value="Under Assessment">Under Assessment</option>
             <option value="Resolved">Resolved</option>
@@ -1941,7 +1950,8 @@
           <label class="form-label">New Status</label>
           <select class="form-select" name="report_status" id="newStatusSelect" required>
             <option value="">-- Select New Status --</option>
-            <option value="Reported">Reported</option>
+            <option value="Pending Validation">Pending Validation</option>
+            <option value="Reported - Validated">Reported - Validated</option>
             <option value="Under Assessment">Under Assessment</option>
             <option value="Resolved">Resolved</option>
           </select>
@@ -1949,7 +1959,8 @@
         <div style="background:#FAFAFA; border-radius:8px; padding:12px 14px; margin-bottom:18px; border:1px solid #E2E2E2;">
           <div style="font-size:12px; color:#666; font-weight:600; margin-bottom:6px;">STATUS WORKFLOW</div>
           <div style="font-size:12px; color:var(--brown-mid);">
-            Reported → initial submission<br>
+            Pending Validation → public report awaiting confirmation<br>
+            Reported - Validated → confirmed by admin<br>
             Under Assessment → being evaluated<br>
             Resolved → fully addressed
           </div>
