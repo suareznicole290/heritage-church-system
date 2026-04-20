@@ -445,16 +445,19 @@ def signup():
                 otp,
                 expiry
             ))
-            mysql.connection.commit()
-            cur.close()
 
             send_verification_email(email, otp)
+
+            mysql.connection.commit()
+            cur.close()
+            
             session['pending_verification_email'] = email
 
             flash('Account created. Please check your email for the verification code.', 'success')
             return redirect(url_for('verify_email'))
 
         except Exception as e:
+            mysql.connection.rollback()
             print('SIGNUP ERROR:', e)
             flash('Unable to create account right now. Please try again.', 'danger')
 
@@ -499,11 +502,26 @@ def verify_email():
                 return redirect(url_for('signup'))
 
             if user['email_verified']:
+                cur.execute("""
+                    SELECT u.*, r.role_name
+                    FROM users u
+                    JOIN roles r ON u.role_id = r.role_id
+                    WHERE u.email = %s
+                """, (email,))
+                verified_user = cur.fetchone()
                 cur.close()
+
                 session.pop('pending_verification_email', None)
+
+                session['user_id'] = verified_user['user_id']
+                session['username'] = verified_user['username']
+                session['full_name'] = verified_user['full_name']
+                session['role_name'] = verified_user['role_name']
+                session['municipality_id'] = verified_user['municipality_id']
+
                 flash('Your email is already verified. You are now logged in.', 'info')
                 return redirect(url_for('public_reports'))
-
+                
             expiry = user['verification_expiry']
             if expiry and datetime.now() > expiry:
                 cur.close()
@@ -1116,6 +1134,7 @@ def hazard_map():
 
 
 # ─── Public Reports Page ──────────────────────────────────────────────────────
+
 @app.route('/reports')
 def public_reports():
     cur = mysql.connection.cursor()
@@ -1172,20 +1191,19 @@ def public_reports():
         ORDER BY c.church_name ASC
     """)
     churches = cur.fetchall()
+
     pending_public_report = session.get('pending_public_report', {})
-cur.close()
+    cur.close()
 
-return render_template(
-    'reports_public.html',
-    reports=reports,
-    report_images_map=report_images_map,
-    hazard_types=hazard_types,
-    municipalities=municipalities,
-    churches=churches,
-    pending_public_report=pending_public_report
-)
-    
-
+    return render_template(
+        'reports_public.html',
+        reports=reports,
+        report_images_map=report_images_map,
+        hazard_types=hazard_types,
+        municipalities=municipalities,
+        churches=churches,
+        pending_public_report=pending_public_report
+    )            
 # ─── Public About Page ────────────────────────────────────────────────────────
 @app.route('/about')
 def about():
