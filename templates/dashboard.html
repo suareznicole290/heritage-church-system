@@ -2161,7 +2161,9 @@
 
     box.innerHTML = items.map(img => `
       <div class="manage-thumb-card">
-        <img src="/static/${escapeHtml(img.image_path)}" alt="Church photo">
+        <img src="${img.image_path.startsWith('http')
+        ? escapeHtml(img.image_path)
+        : `/static/${escapeHtml(img.image_path)}`}" alt="Church photo">
         <div class="manage-thumb-meta">
           <div class="manage-thumb-text">${escapeHtml(img.image_caption || 'No caption')}</div>
           <div class="manage-record-actions">
@@ -2194,7 +2196,9 @@
           <div class="report-image-list">
             ${r.images.map(img => `
               <div class="report-thumb-wrap">
-                <img src="/static/${escapeHtml(img.image_path)}" alt="Report image">
+                <img src="${img.image_path.startsWith('http') 
+                  ? escapeHtml(img.image_path) 
+                  : `/static/${escapeHtml(img.image_path)}`}" alt="Report image">
                 <form method="POST" action="/admin/delete-report-image/${img.report_image_id}/${r.report_id}/${church.church_id}" onsubmit="return confirm('Delete this report image?');">
                   <input type="hidden" name="csrf_token" value="${csrfToken}">
                   <input type="hidden" name="redirect_to" value="dashboard_manage:reports">
