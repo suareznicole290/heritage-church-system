@@ -1435,7 +1435,7 @@ def submit_report():
                 (church_id, hazard_type_id, incident_date,
                  report_description, damage_level,
                  report_status, reported_by)
-            VALUES (%s, %s, %s, %s, %s, 'Reported', %s)
+            VALUES (%s, %s, %s, %s, %s, 'Pending Validation', %s)
         """, (
             church_id,
             hazard_type_id,
