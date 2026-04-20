@@ -11,6 +11,8 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf.csrf import CSRFProtect
 from PIL import Image
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
 
@@ -23,6 +25,14 @@ app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.environ.get('MYSQL_PORT', 3306))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB upload limit
+
+app.config['MYSQL_SSL'] = {'ssl': {}}
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+)
 
 csrf = CSRFProtect(app)
 mysql = MySQL(app)
@@ -77,18 +87,23 @@ def save_report_images(files):
             invalid_files += 1
             continue
 
-        original_name = secure_filename(file.filename)
-        ext = original_name.rsplit('.', 1)[1].lower()
-        unique_name = f"{uuid.uuid4().hex}.{ext}"
+        try:
+            original_name = secure_filename(file.filename)
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="heritage_church/reports",
+                public_id=f"{uuid.uuid4().hex}_{os.path.splitext(original_name)[0]}",
+                resource_type="image"
+            )
+            saved_paths.append({
+                "url": upload_result["secure_url"],
+                "public_id": upload_result["public_id"]
+            })
+        except Exception:
+            invalid_files += 1
 
-        absolute_path = os.path.join(REPORT_UPLOAD_FOLDER, unique_name)
-        relative_path = os.path.join('uploads', 'reports', unique_name).replace('\\', '/')
-
-        file.save(absolute_path)
-        saved_paths.append(relative_path)
-    
     if invalid_files > 0:
-        flash(f"{invalid_files} invalid files(s) were skipped.", "warning")
+        flash(f"{invalid_files} invalid file(s) were skipped.", "warning")
 
     return saved_paths
 
@@ -105,20 +120,25 @@ def save_church_images(files):
             invalid_files += 1
             continue
 
-        original_name = secure_filename(file.filename)
-        ext = original_name.rsplit('.', 1)[1].lower()
-        unique_name = f"{uuid.uuid4().hex}.{ext}"
+        try:
+            original_name = secure_filename(file.filename)
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="heritage_church/churches",
+                public_id=f"{uuid.uuid4().hex}_{os.path.splitext(original_name)[0]}",
+                resource_type="image"
+            )
+            saved_paths.append({
+                "url": upload_result["secure_url"],
+                "public_id": upload_result["public_id"]
+            })
+        except Exception:
+            invalid_files += 1
 
-        absolute_path = os.path.join(CHURCH_UPLOAD_FOLDER, unique_name)
-        relative_path = os.path.join('uploads', 'churches', unique_name).replace('\\', '/')
-
-        file.save(absolute_path)
-        saved_paths.append(relative_path)
     if invalid_files > 0:
-        flash(f"{invalid_files} invalid files(s) were skipped.", "warning")
+        flash(f"{invalid_files} invalid file(s) were skipped.", "warning")
 
     return saved_paths
-
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 def can_manage_church(church_id):
@@ -1429,11 +1449,11 @@ def submit_report():
         new_report_id = cur.lastrowid
         saved_paths = save_report_images(uploaded_files)
 
-        for image_path in saved_paths:
+        for image in saved_paths:
             cur.execute("""
                 INSERT INTO report_images (report_id, image_path)
                 VALUES (%s, %s)
-            """, (new_report_id, image_path))
+            """, (new_report_id, image["url"]))
 
         mysql.connection.commit()
         cur.close()
@@ -1679,13 +1699,13 @@ def upload_church_image(church_id):
         cur = mysql.connection.cursor()
         first_image_id = None
 
-        for image_path in saved_paths:
+        for image in saved_paths:
             cur.execute("""
                 INSERT INTO church_images (church_id, image_path, image_caption, uploaded_by)
                 VALUES (%s, %s, %s, %s)
             """, (
                 church_id,
-                image_path,
+                image["url"],
                 image_caption if image_caption else None,
                 session.get('user_id')
             ))
