@@ -794,20 +794,25 @@
 
                 {% if report_images_map.get(report.report_id) %}
                   {% set images = report_images_map.get(report.report_id) %}
+                  {% set main_path = images[0].image_path %}
+                  {% set main_src = main_path if main_path.startswith('http') else url_for('static', filename=main_path) %}
+
                   <img
                     class="report-main-image"
-                    src="{{ url_for('static', filename=images[0].image_path) }}"
+                    src="{{ main_src }}"
                     alt="Report image"
-                    onclick="openLightbox('{{ url_for('static', filename=images[0].image_path) }}')">
+                    onclick="openLightbox('{{ main_src }}')">
 
                   {% if images|length > 1 %}
                   <div class="report-thumbs">
                     {% for img in images %}
-                    <img
-                      class="report-thumb"
-                      src="{{ url_for('static', filename=img.image_path) }}"
-                      alt="Report thumbnail"
-                      onclick="openLightbox('{{ url_for('static', filename=img.image_path) }}')">
+                      {% set img_path = img.image_path %}
+                      {% set img_src = img_path if img_path.startswith('http') else url_for('static', filename=img_path) %}
+                      <img
+                        class="report-thumb"
+                        src="{{ img_src }}"
+                        alt="Report thumbnail"
+                        onclick="openLightbox('{{ img_src }}')">
                     {% endfor %}
                   </div>
                   {% endif %}
