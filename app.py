@@ -1173,15 +1173,15 @@ def public_reports():
     """)
     churches = cur.fetchall()
     pending_public_report = session.get('pending_public_report', {})
-    cur.close()
+cur.close()
 
-   return render_template(
-        'reports_public.html',
-        reports=reports,
-        hazard_types=hazard_types,
-        municipalities=municipalities,
-        churches=churches,
-        pending_public_report=pending_public_report
+return render_template(
+    'reports_public.html',
+    reports=reports,
+    hazard_types=hazard_types,
+    municipalities=municipalities,
+    churches=churches,
+    pending_public_report=pending_public_report
 )
     )
 
