@@ -314,7 +314,7 @@ def dashboard():
         cur.execute("""
             SELECT COUNT(*) AS total
             FROM disaster_reports
-            WHERE report_status = 'Reported' OR report_status = 'Under Assessment'
+            WHERE report_status IN ('Pending Validation', 'Reported - Validated', 'Under Assessment')
         """)
         pending_reports = cur.fetchone()['total']
 
@@ -418,10 +418,9 @@ def dashboard():
             FROM disaster_reports dr
             JOIN churches c ON dr.church_id = c.church_id
             WHERE c.municipality_id = %s
-              AND (dr.report_status = 'Reported' OR dr.report_status = 'Under Assessment')
+              AND dr.report_status IN ('Pending Validation', 'Reported - Validated', 'Under Assessment')
         """, (municipality_id,))
         pending_reports = cur.fetchone()['total']
-
         cur.execute("""
             SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name
             FROM disaster_reports dr
@@ -1435,7 +1434,7 @@ def submit_report():
                 (church_id, hazard_type_id, incident_date,
                  report_description, damage_level,
                  report_status, reported_by)
-            VALUES (%s, %s, %s, %s, %s, 'Pending Validation', %s)
+            VALUES (%s, %s, %s, %s, %s, 'Reported - Validated', %s)
         """, (
             church_id,
             hazard_type_id,
@@ -1843,7 +1842,7 @@ def submit_public_report():
                 (church_id, hazard_type_id, incident_date,
                  report_description, damage_level,
                  report_status, reported_by)
-            VALUES (%s, %s, %s, %s, %s, 'Reported', NULL)
+            VALUES (%s, %s, %s, %s, %s, 'Pending Validation', NULL)
         """, (
             church_id,
             hazard_type_id,
