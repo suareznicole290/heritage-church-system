@@ -677,6 +677,7 @@
         </div>
         <div class="report-submit-body">
           <form method="POST" action="/submit-public-report" enctype="multipart/form-data" class="public-report-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">Church</label>
