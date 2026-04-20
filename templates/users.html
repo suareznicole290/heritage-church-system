@@ -398,6 +398,23 @@
     width: calc(100vw - 16px);
   }
 }
+
+@media (max-width: 768px) {
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 720px;
+  }
+}
+
+@media (max-width: 520px) {
+  .data-table {
+    min-width: 640px;
+  }
+}
 {% endblock %}
 
 {% block content %}
@@ -459,7 +476,7 @@
                   '{{ u.username|e }}',
                   '{{ u.email|e }}',
                   '{{ u.role_id }}',
-                  '{{ u.account_status }}'
+                  '{{ u.account_status|e }}'
                 )">
                 Edit
               </button>
@@ -599,17 +616,25 @@
 {% block extra_scripts %}
 <script>
 function openAddModal() {
-  document.getElementById('addUserModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
+  const modal = document.getElementById('addUserModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 }
 
 function closeAddModal() {
-  document.getElementById('addUserModal').classList.remove('active');
-  document.body.style.overflow = '';
+  const modal = document.getElementById('addUserModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 function openEditModal(userId, fullName, username, email, roleId, accountStatus) {
   const form = document.getElementById('editUserForm');
+  if (!form) return;
+
   form.action = '/admin/users/update/' + userId;
 
   document.getElementById('edit_full_name').value = fullName;
@@ -619,21 +644,34 @@ function openEditModal(userId, fullName, username, email, roleId, accountStatus)
   document.getElementById('edit_role_id').value = roleId;
   document.getElementById('edit_account_status').value = accountStatus;
 
-  document.getElementById('editUserModal').classList.add('active');
-  document.body.style.overflow = 'hidden';
+  const modal = document.getElementById('editUserModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 }
 
 function closeEditModal() {
-  document.getElementById('editUserModal').classList.remove('active');
-  document.body.style.overflow = '';
+  const modal = document.getElementById('editUserModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
-document.getElementById('addUserModal').addEventListener('click', function(e) {
-  if (e.target === this) closeAddModal();
-});
+/* SAFE MODAL CLICK HANDLING */
+const addUserModal = document.getElementById('addUserModal');
+if (addUserModal) {
+  addUserModal.addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+  });
+}
 
-document.getElementById('editUserModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEditModal();
-});
+const editUserModal = document.getElementById('editUserModal');
+if (editUserModal) {
+  editUserModal.addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+}
 </script>
 {% endblock %}
