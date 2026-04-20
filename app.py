@@ -1178,12 +1178,13 @@ cur.close()
 return render_template(
     'reports_public.html',
     reports=reports,
+    report_images_map=report_images_map,
     hazard_types=hazard_types,
     municipalities=municipalities,
     churches=churches,
     pending_public_report=pending_public_report
 )
-    )
+    
 
 # ─── Public About Page ────────────────────────────────────────────────────────
 @app.route('/about')
