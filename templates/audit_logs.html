@@ -105,6 +105,7 @@
 .table-wrap {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
@@ -137,7 +138,7 @@
 
 .data-table td:last-child {
   white-space: normal;
-  min-width: 260px;
+  min-width: 220px;
   line-height: 1.6;
 }
 
@@ -192,6 +193,15 @@
   .main-content {
     padding: 20px 0 18px;
   }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 900px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -203,6 +213,10 @@
 
   .card-title-bar {
     padding: 14px 16px;
+  }
+
+  .data-table {
+    min-width: 800px;
   }
 }
 {% endblock %}
