@@ -7,3 +7,4 @@ gunicorn
 mysqlclient
 Werkzeug
 cloudinary
+Flask-Mail
