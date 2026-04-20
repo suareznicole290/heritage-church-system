@@ -1856,11 +1856,11 @@ def submit_public_report():
         new_report_id = cur.lastrowid
         saved_paths = save_report_images(uploaded_files)
 
-        for image_path in saved_paths:
+        for image in saved_paths:
             cur.execute("""
                 INSERT INTO report_images (report_id, image_path)
                 VALUES (%s, %s)
-            """, (new_report_id, image_path))
+            """, (new_report_id, image["url"]))
 
         mysql.connection.commit()
         cur.close()
