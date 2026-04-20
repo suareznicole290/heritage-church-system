@@ -615,18 +615,22 @@
       </div>
       <div class="card-body">
         {% if images %}
+          {% set featured_path = images[0].image_path %}
+          {% set featured_src = featured_path if featured_path.startswith('http') else url_for('static', filename=featured_path) %}
           <div class="gallery-featured">
-            <a href="{{ url_for('static', filename=images[0].image_path) }}" target="_blank">
-              <img src="{{ url_for('static', filename=images[0].image_path) }}" alt="Church featured image">
+            <a href="{{ featured_src }}" target="_blank">
+              <img src="{{ featured_src }}" alt="Church featured image">
             </a>
           </div>
 
           {% if images|length > 1 %}
           <div class="gallery-grid">
             {% for img in images[1:] %}
+            {% set img_path = img.image_path %}
+            {% set img_src = img_path if img_path.startswith('http') else url_for('static', filename=img_path) %}
             <div class="gallery-item">
-              <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank">
-                <img src="{{ url_for('static', filename=img.image_path) }}" alt="Church image">
+              <a href="{{ img_src }}" target="_blank">
+                <img src="{{ img_src }}" alt="Church image">
               </a>
               <div class="gallery-meta">
                 <div class="gallery-caption">{{ img.image_caption or 'Church Photo' }}</div>
@@ -854,9 +858,11 @@
             {% if report_images_map.get(r.report_id) %}
             <div class="report-image-list">
               {% for img in report_images_map.get(r.report_id) %}
-              <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank">
+              {% set img_path = img.image_path %}
+              {% set img_src = img_path if img_path.startswith('http') else url_for('static', filename=img_path) %}
+              <a href="{{ img_src }}" target="_blank">
                 <img
-                  src="{{ url_for('static', filename=img.image_path) }}"
+                  src="{{ img_src }}"
                   alt="Damage photo"
                   class="report-thumb">
               </a>
