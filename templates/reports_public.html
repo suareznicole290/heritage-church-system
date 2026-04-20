@@ -663,7 +663,8 @@
 
             <select class="filter-select" id="statusFilter" onchange="filterReports()">
               <option value="">All Statuses</option>
-              <option value="Reported">Reported</option>
+              <option value="Pending Validation">Pending Validation</option>
+              <option value="Reported - Validated">Reported - Validated</option>
               <option value="Under Assessment">Under Assessment</option>
               <option value="Resolved">Resolved</option>
             </select>
@@ -775,11 +776,13 @@
               <div class="report-toggle-right">
                 <span class="status-badge
                   {% if report.report_status == 'Resolved' %}badge-resolved
-                  {% elif report.report_status == 'Under Assessment' %}badge-assessment
+                  {% elif report.report_status == 'Under Assessment' %}
+                    badge-assessment
+                  {% elif report.report_status == 'Reported - Validated' %}
+                    badge-reported
                   {% else %}badge-reported{% endif %}">
                   {{ report.report_status }}
                 </span>
-
                 {% if report.damage_level %}
                 <span class="damage-pill">{{ report.damage_level }} Damage</span>
                 {% endif %}
