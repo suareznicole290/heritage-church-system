@@ -173,40 +173,51 @@ def save_church_images(files):
     return saved_paths
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
-def can_manage_church(church_id):
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT municipality_id FROM churches WHERE church_id = %s", (church_id,))
-    church = cur.fetchone()
-    cur.close()
-
-    if not church:
-        return False
-
-    if session.get('role_name') == 'Super Admin':
-        return True
-
-    return church['municipality_id'] == session.get('municipality_id')
+def is_admin_role(role_name=None):
+    role_name = role_name or session.get('role_name')
+    return role_name in ('Super Admin', 'Municipal Admin', 'Church Authorized Personnel')
 
 
 def is_super_admin():
     return session.get('role_name') == 'Super Admin'
 
 
-# ─── Audit Logger ─────────────────────────────────────────────────────────────
-def log_audit(user_id, action_type, affected_table=None, record_id=None, description=None):
-    try:
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            INSERT INTO audit_logs (user_id, action_type, affected_table, record_id, description)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, action_type, affected_table, record_id, description))
-        mysql.connection.commit()
-        cur.close()
-    except Exception as e:
-        print("AUDIT LOG ERROR:", e)
+def is_church_authorized_personnel():
+    return session.get('role_name') == 'Church Authorized Personnel'
 
 
-# ─── Auth Decorators ──────────────────────────────────────────────────────────
+def get_assigned_church_id():
+    return session.get('assigned_church_id')
+
+
+def can_manage_church(church_id):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT church_id, municipality_id
+        FROM churches
+        WHERE church_id = %s
+    """, (church_id,))
+    church = cur.fetchone()
+    cur.close()
+
+    if not church:
+        return False
+
+    role_name = session.get('role_name')
+
+    if role_name == 'Super Admin':
+        return True
+
+    if role_name == 'Municipal Admin':
+        return church['municipality_id'] == session.get('municipality_id')
+
+    if role_name == 'Church Authorized Personnel':
+        assigned_church_id = session.get('assigned_church_id')
+        return str(church['church_id']) == str(assigned_church_id)
+
+    return False
+
+
 def login_required(f):
     @wraps(f)
     def wrapped_view(*args, **kwargs):
@@ -239,7 +250,7 @@ def admin_required(f):
             flash('Please log in to access that page.', 'warning')
             return redirect(url_for('login'))
 
-        if session.get('role_name') not in ('Super Admin', 'Municipal Admin'):
+        if not is_admin_role():
             flash('You do not have permission to access that page.', 'danger')
             return redirect(url_for('index'))
 
@@ -251,10 +262,10 @@ def admin_required(f):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user_id' in session:
-        if session.get('role_name') in ('Super Admin', 'Municipal Admin'):
+        if is_admin_role():
             return redirect(url_for('dashboard'))
         return redirect(url_for('index'))
-
+    
     error = None
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -282,6 +293,7 @@ def login():
                 session['full_name'] = user['full_name']
                 session['role_name'] = user['role_name']
                 session['municipality_id'] = user['municipality_id']
+                session['assigned_church_id'] = user.get('assigned_church_id')
 
                 log_audit(
                     user['user_id'],
@@ -293,7 +305,7 @@ def login():
 
                 flash(f"Welcome back, {user['full_name']}!", 'success')
 
-                if user['role_name'] in ('Super Admin', 'Municipal Admin'):
+                if is_admin_role(user['role_name']):
                     return redirect(url_for('dashboard'))
                 return redirect(url_for('index'))
         else:
@@ -307,7 +319,7 @@ def public_login():
     set_public_next_url()
 
     if 'user_id' in session:
-        if session.get('role_name') in ('Super Admin', 'Municipal Admin'):
+        if is_admin_role():
             return redirect(url_for('dashboard'))
         return redirect(pop_public_next_url())
 
@@ -719,6 +731,113 @@ def dashboard():
         """)
         municipality_stats = cur.fetchall()
 
+    elif session.get('role_name') == 'Church Authorized Personnel':
+        assigned_church_id = session.get('assigned_church_id')
+
+        if not assigned_church_id:
+            cur.close()
+            flash('No church is assigned to your account. Please contact the administrator.', 'danger')
+            return redirect(url_for('logout'))
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM churches
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_churches = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM disaster_reports
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_reports = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(DISTINCT church_id) AS total
+            FROM church_hazard_assessments
+            WHERE church_id = %s AND risk_level = 'High'
+        """, (assigned_church_id,))
+        high_risk = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM users
+            WHERE assigned_church_id = %s
+        """, (assigned_church_id,))
+        total_users = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM disaster_reports
+            WHERE church_id = %s
+              AND report_status IN ('Pending Validation', 'Reported - Validated', 'Under Assessment')
+        """, (assigned_church_id,))
+        pending_reports = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name
+            FROM disaster_reports dr
+            JOIN churches c ON dr.church_id = c.church_id
+            JOIN municipalities m ON c.municipality_id = m.municipality_id
+            JOIN hazard_types ht ON dr.hazard_type_id = ht.hazard_type_id
+            WHERE dr.church_id = %s
+            ORDER BY dr.report_date DESC
+            LIMIT 8
+        """, (assigned_church_id,))
+        recent_reports = cur.fetchall()
+
+        cur.execute("""
+            SELECT
+                c.*,
+                m.municipality_name,
+                cd.historical_background,
+                cd.historical_period,
+                cd.cultural_significance,
+                cd.religious_significance,
+                cd.notable_artifacts,
+                MAX(CASE
+                    WHEN cha.risk_level = 'High' THEN 'High'
+                    WHEN cha.risk_level = 'Medium' THEN 'Medium'
+                    WHEN cha.risk_level = 'Low' THEN 'Low'
+                    ELSE NULL
+                END) AS highest_risk
+            FROM churches c
+            JOIN municipalities m ON c.municipality_id = m.municipality_id
+            LEFT JOIN church_descriptions cd ON c.church_id = cd.church_id
+            LEFT JOIN church_hazard_assessments cha ON c.church_id = cha.church_id
+            WHERE c.church_id = %s
+            GROUP BY
+                c.church_id,
+                c.church_name,
+                c.municipality_id,
+                c.barangay,
+                c.address,
+                c.latitude,
+                c.longitude,
+                c.date_built,
+                c.monitoring_status,
+                c.created_by,
+                c.created_at,
+                m.municipality_name,
+                cd.historical_background,
+                cd.historical_period,
+                cd.cultural_significance,
+                cd.religious_significance,
+                cd.notable_artifacts
+            ORDER BY c.church_name ASC
+        """, (assigned_church_id,))
+        churches = cur.fetchall()
+
+        cur.execute("""
+            SELECT m.municipality_name, COUNT(c.church_id) AS church_count
+            FROM churches c
+            JOIN municipalities m ON c.municipality_id = m.municipality_id
+            WHERE c.church_id = %s
+            GROUP BY m.municipality_id, m.municipality_name
+        """, (assigned_church_id,))
+        municipality_stats = cur.fetchall()
+
     else:
         municipality_id = session.get('municipality_id')
 
@@ -761,6 +880,7 @@ def dashboard():
               AND dr.report_status IN ('Pending Validation', 'Reported - Validated', 'Under Assessment')
         """, (municipality_id,))
         pending_reports = cur.fetchone()['total']
+
         cur.execute("""
             SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name
             FROM disaster_reports dr
@@ -1130,6 +1250,77 @@ def hazard_map():
         scope_label = muni['municipality_name'] if muni else 'Assigned Municipality'
         is_admin_view = True
 
+    elif role_name == 'Church Authorized Personnel':
+        assigned_church_id = session.get('assigned_church_id')
+
+        if not assigned_church_id:
+            cur.close()
+            flash('No church is assigned to your account. Please contact the administrator.', 'danger')
+            return redirect(url_for('logout'))
+
+        cur.execute("""
+            SELECT
+                c.church_id,
+                c.church_name,
+                c.barangay,
+                c.address,
+                c.latitude,
+                c.longitude,
+                c.monitoring_status,
+                m.municipality_name,
+                MAX(CASE
+                    WHEN cha.risk_level = 'High' THEN 'High'
+                    WHEN cha.risk_level = 'Medium' THEN 'Medium'
+                    WHEN cha.risk_level = 'Low' THEN 'Low'
+                    ELSE NULL
+                END) AS highest_risk
+            FROM churches c
+            JOIN municipalities m ON c.municipality_id = m.municipality_id
+            LEFT JOIN church_hazard_assessments cha ON c.church_id = cha.church_id
+            WHERE c.church_id = %s
+              AND c.latitude IS NOT NULL
+              AND c.longitude IS NOT NULL
+            GROUP BY
+                c.church_id, c.church_name, c.barangay, c.address,
+                c.latitude, c.longitude, c.monitoring_status, m.municipality_name
+            ORDER BY c.church_name ASC
+        """, (assigned_church_id,))
+        churches = cur.fetchall()
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM churches
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_churches = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(DISTINCT church_id) AS mapped_count
+            FROM churches
+            WHERE church_id = %s
+              AND latitude IS NOT NULL
+              AND longitude IS NOT NULL
+        """, (assigned_church_id,))
+        mapped_count = cur.fetchone()['mapped_count']
+
+        cur.execute("""
+            SELECT COUNT(DISTINCT church_id) AS high_risk_count
+            FROM church_hazard_assessments
+            WHERE church_id = %s
+              AND risk_level = 'High'
+        """, (assigned_church_id,))
+        high_risk_count = cur.fetchone()['high_risk_count']
+
+        cur.execute("""
+            SELECT church_name
+            FROM churches
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        church_row = cur.fetchone()
+
+        scope_label = church_row['church_name'] if church_row else 'Assigned Church'
+        is_admin_view = True
+
     else:
         cur.execute("""
             SELECT
@@ -1190,7 +1381,7 @@ def hazard_map():
         scope_label=scope_label,
         is_admin_view=is_admin_view
     )
-
+    
 
 # ─── Public Reports Page ──────────────────────────────────────────────────────
 
@@ -1777,6 +1968,12 @@ def submit_report():
                 flash('You do not have permission to submit a report for this church.', 'danger')
                 return redirect(url_for('dashboard'))
 
+        elif role_name == 'Church Authorized Personnel':
+            if str(church_id) != str(session.get('assigned_church_id')):
+                cur.close()
+                flash('You can only submit official reports for your assigned church.', 'danger')
+                return redirect(url_for('dashboard'))
+
         cur.execute("""
             INSERT INTO disaster_reports
                 (church_id, hazard_type_id, incident_date,
@@ -1820,7 +2017,6 @@ def submit_report():
         flash(f'Error submitting report: {str(e)}', 'danger')
 
     return redirect(url_for('dashboard'))
-
 
 # ─── Update Church Description ────────────────────────────────────────────────
 @app.route('/admin/update-church-description/<int:church_id>', methods=['POST'])
@@ -2598,6 +2794,7 @@ def add_user():
     password = request.form.get('password', '').strip()
     role_id = request.form.get('role_id')
     municipality_id = request.form.get('municipality_id') or None
+    assigned_church_id = request.form.get('assigned_church_id') or None
 
     if not full_name or not username or not email or not password or not role_id:
         flash('Full name, username, email, password, and role are required.', 'danger')
@@ -2618,14 +2815,54 @@ def add_user():
             flash('Username or email already exists. Please use a different one.', 'danger')
             return redirect(url_for('admin_users'))
 
+        cur.execute("SELECT role_name FROM roles WHERE role_id = %s", (role_id,))
+        selected_role = cur.fetchone()
+        
+        if not selected_role:
+            cur.close()
+            flash('Selected role was not found.', 'danger')
+            return redirect(url_for('admin_users'))
+        
+        selected_role_name = selected_role['role_name']
+        
+        if selected_role_name == 'Church Authorized Personnel':
+            if not assigned_church_id:
+                cur.close()
+                flash('Assigned church is required for Church Authorized Personnel.', 'danger')
+                return redirect(url_for('admin_users'))
+        
+            cur.execute("""
+                SELECT municipality_id
+                FROM churches
+                WHERE church_id = %s
+            """, (assigned_church_id,))
+            assigned_church = cur.fetchone()
+        
+            if not assigned_church:
+                cur.close()
+                flash('Assigned church was not found.', 'danger')
+                return redirect(url_for('admin_users'))
+        
+            municipality_id = assigned_church['municipality_id']
+        else:
+            assigned_church_id = None
+
         hashed_password = generate_password_hash(password)
 
         cur.execute("""
-    INSERT INTO users
-        (full_name, username, email, password_hash,
-         role_id, municipality_id, account_status)
-    VALUES (%s, %s, %s, %s, %s, %s, 'active')
-""", (full_name, username, email, hashed_password, role_id, municipality_id))
+            INSERT INTO users
+                (full_name, username, email, password_hash,
+                 role_id, municipality_id, assigned_church_id, account_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'active')
+        """, (
+            full_name,
+            username,
+            email,
+            hashed_password,
+            role_id,
+            municipality_id,
+            assigned_church_id
+        ))
         mysql.connection.commit()
         new_user_id = cur.lastrowid
         cur.close()
@@ -2662,6 +2899,7 @@ def update_user(user_id):
     password = request.form.get('password', '').strip()
     role_id = request.form.get('role_id')
     municipality_id = request.form.get('municipality_id') or None
+    assigned_church_id = request.form.get('assigned_church_id') or None
     account_status = request.form.get('account_status', 'active').strip()
 
     if not full_name or not username or not email or not role_id:
@@ -2692,6 +2930,38 @@ def update_user(user_id):
             flash('Username or email already exists for another user.', 'danger')
             return redirect(url_for('admin_users'))
 
+        cur.execute("SELECT role_name FROM roles WHERE role_id = %s", (role_id,))
+        selected_role = cur.fetchone()
+        
+        if not selected_role:
+            cur.close()
+            flash('Selected role was not found.', 'danger')
+            return redirect(url_for('admin_users'))
+        
+        selected_role_name = selected_role['role_name']
+        
+        if selected_role_name == 'Church Authorized Personnel':
+            if not assigned_church_id:
+                cur.close()
+                flash('Assigned church is required for Church Authorized Personnel.', 'danger')
+                return redirect(url_for('admin_users'))
+        
+            cur.execute("""
+                SELECT municipality_id
+                FROM churches
+                WHERE church_id = %s
+            """, (assigned_church_id,))
+            assigned_church = cur.fetchone()
+        
+            if not assigned_church:
+                cur.close()
+                flash('Assigned church was not found.', 'danger')
+                return redirect(url_for('admin_users'))
+        
+            municipality_id = assigned_church['municipality_id']
+        else:
+            assigned_church_id = None
+
         if password:
             hashed_password = generate_password_hash(password)
 
@@ -2703,6 +2973,7 @@ def update_user(user_id):
                     password_hash = %s,
                     role_id = %s,
                     municipality_id = %s,
+                    assigned_church_id = %s,
                     account_status = %s
                 WHERE user_id = %s
             """, (
@@ -2712,6 +2983,7 @@ def update_user(user_id):
                 hashed_password,
                 role_id,
                 municipality_id,
+                assigned_church_id,
                 account_status,
                 user_id
             ))
@@ -2723,6 +2995,7 @@ def update_user(user_id):
                     email = %s,
                     role_id = %s,
                     municipality_id = %s,
+                    assigned_church_id = %s,
                     account_status = %s
                 WHERE user_id = %s
             """, (
@@ -2731,6 +3004,7 @@ def update_user(user_id):
                 email,
                 role_id,
                 municipality_id,
+                assigned_church_id,
                 account_status,
                 user_id
             ))
@@ -2843,8 +3117,9 @@ def delete_user(user_id):
 @admin_required
 def view_reports():
     cur = mysql.connection.cursor()
+    role_name = session.get('role_name')
 
-    if session.get('role_name') == 'Super Admin':
+    if role_name == 'Super Admin':
         cur.execute("""
             SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name,
                    u.full_name AS reported_by_name
@@ -2855,7 +3130,8 @@ def view_reports():
             LEFT JOIN users u ON dr.reported_by = u.user_id
             ORDER BY dr.report_date DESC
         """)
-    else:
+
+    elif role_name == 'Municipal Admin':
         cur.execute("""
             SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name,
                    u.full_name AS reported_by_name
@@ -2867,6 +3143,20 @@ def view_reports():
             WHERE m.municipality_id = %s
             ORDER BY dr.report_date DESC
         """, (session.get('municipality_id'),))
+
+    else:
+        cur.execute("""
+            SELECT dr.*, c.church_name, m.municipality_name, ht.hazard_name,
+                   u.full_name AS reported_by_name
+            FROM disaster_reports dr
+            JOIN churches c ON dr.church_id = c.church_id
+            JOIN municipalities m ON c.municipality_id = m.municipality_id
+            JOIN hazard_types ht ON dr.hazard_type_id = ht.hazard_type_id
+            LEFT JOIN users u ON dr.reported_by = u.user_id
+            WHERE dr.church_id = %s
+            ORDER BY dr.report_date DESC
+        """, (session.get('assigned_church_id'),))
+
     reports = cur.fetchall()
 
     cur.execute("SELECT * FROM hazard_types ORDER BY hazard_name ASC")
@@ -2889,6 +3179,10 @@ def update_report(report_id):
 
     if not new_status:
         flash('Report status is required.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if is_church_authorized_personnel():
+        flash('Church Authorized Personnel cannot validate public reports.', 'danger')
         return redirect(url_for('dashboard'))
 
     cur = mysql.connection.cursor()
@@ -2935,6 +3229,7 @@ def update_report(report_id):
 
     flash(f'Report status updated to "{new_status}" successfully!', 'success')
     return redirect(url_for('dashboard'))
+
 
 # ─── Analytics ────────────────────────────────────────────────────────────────
 @app.route('/admin/analytics')
@@ -3003,6 +3298,101 @@ def analytics():
         total_assessments = cur.fetchone()['total']
 
         scope_label = 'System-wide'
+
+    elif session.get('role_name') == 'Church Authorized Personnel':
+        assigned_church_id = session.get('assigned_church_id')
+
+        if not assigned_church_id:
+            cur.close()
+            flash('No church is assigned to your account. Please contact the administrator.', 'danger')
+            return redirect(url_for('logout'))
+
+        cur.execute("""
+            SELECT report_status, COUNT(*) AS total
+            FROM disaster_reports
+            WHERE church_id = %s
+            GROUP BY report_status
+        """, (assigned_church_id,))
+        reports_by_status = cur.fetchall()
+
+        cur.execute("""
+            SELECT ht.hazard_name, COUNT(dr.report_id) AS total
+            FROM hazard_types ht
+            LEFT JOIN disaster_reports dr
+                ON ht.hazard_type_id = dr.hazard_type_id
+               AND dr.church_id = %s
+            GROUP BY ht.hazard_type_id, ht.hazard_name
+            ORDER BY total DESC, ht.hazard_name ASC
+        """, (assigned_church_id,))
+        reports_by_hazard = cur.fetchall()
+
+        cur.execute("""
+            SELECT
+                SUM(CASE WHEN highest_risk = 'High' THEN 1 ELSE 0 END) AS high,
+                SUM(CASE WHEN highest_risk = 'Medium' THEN 1 ELSE 0 END) AS medium,
+                SUM(CASE WHEN highest_risk = 'Low' THEN 1 ELSE 0 END) AS low,
+                SUM(CASE WHEN highest_risk IS NULL THEN 1 ELSE 0 END) AS unassessed
+            FROM (
+                SELECT c.church_id,
+                    MAX(CASE WHEN cha.risk_level = 'High' THEN 'High'
+                             WHEN cha.risk_level = 'Medium' THEN 'Medium'
+                             WHEN cha.risk_level = 'Low' THEN 'Low'
+                             ELSE NULL END) AS highest_risk
+                FROM churches c
+                LEFT JOIN church_hazard_assessments cha ON c.church_id = cha.church_id
+                WHERE c.church_id = %s
+                GROUP BY c.church_id
+            ) AS risk_summary
+        """, (assigned_church_id,))
+        risk_summary = cur.fetchone()
+
+        cur.execute("""
+            SELECT m.municipality_name, COUNT(dr.report_id) AS total
+            FROM municipalities m
+            JOIN churches c ON m.municipality_id = c.municipality_id
+            JOIN disaster_reports dr ON c.church_id = dr.church_id
+            WHERE c.church_id = %s
+            GROUP BY m.municipality_id, m.municipality_name
+        """, (assigned_church_id,))
+        reports_by_municipality = cur.fetchall()
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM churches
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_churches = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM disaster_reports
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_reports = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM disaster_reports
+            WHERE church_id = %s
+              AND report_status = 'Resolved'
+        """, (assigned_church_id,))
+        resolved_reports = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT COUNT(*) AS total
+            FROM church_hazard_assessments
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        total_assessments = cur.fetchone()['total']
+
+        cur.execute("""
+            SELECT church_name
+            FROM churches
+            WHERE church_id = %s
+        """, (assigned_church_id,))
+        church_row = cur.fetchone()
+
+        scope_label = church_row['church_name'] if church_row else 'Assigned Church'
 
     else:
         municipality_id = session.get('municipality_id')
@@ -3118,7 +3508,6 @@ def analytics():
         total_assessments=total_assessments,
         scope_label=scope_label
     )
-
 
 # ─── Audit Logs ───────────────────────────────────────────────────────────────
 @app.route('/admin/logs')
