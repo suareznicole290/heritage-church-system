@@ -1398,6 +1398,7 @@ def public_reports():
             dr.report_date,
             dr.report_description,
             dr.damage_level,
+            dr.reported_by,
             dr.report_status,
             c.church_name,
             c.barangay,
@@ -2436,6 +2437,106 @@ def submit_public_report():
         flash(f'Error submitting report: {str(e)}', 'danger')
 
     return redirect(url_for('public_reports'))
+
+
+@app.route('/public-report/<int:report_id>/edit', methods=['GET', 'POST'])
+def edit_public_report(report_id):
+    if 'user_id' not in session or session.get('role_name') != 'Public User':
+        flash('Please log in as a public user first.', 'warning')
+        return redirect(url_for('public_login', next=url_for('edit_public_report', report_id=report_id)))
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("""
+        SELECT
+            dr.report_id,
+            dr.church_id,
+            dr.hazard_type_id,
+            dr.incident_date,
+            dr.report_description,
+            dr.damage_level,
+            dr.report_status,
+            dr.reported_by
+        FROM disaster_reports dr
+        WHERE dr.report_id = %s
+    """, (report_id,))
+    report = cur.fetchone()
+
+    if not report:
+        cur.close()
+        flash('Report not found.', 'danger')
+        return redirect(url_for('public_reports'))
+
+    if str(report['reported_by']) != str(session.get('user_id')):
+        cur.close()
+        flash('You can only edit your own report.', 'danger')
+        return redirect(url_for('public_reports'))
+
+    if report['report_status'] != 'Pending Validation':
+        cur.close()
+        flash('This report can no longer be edited because it is already being processed.', 'warning')
+        return redirect(url_for('public_reports'))
+
+    cur.execute("SELECT * FROM hazard_types ORDER BY hazard_name ASC")
+    hazard_types = cur.fetchall()
+
+    cur.execute("""
+        SELECT c.church_id, c.church_name, m.municipality_name
+        FROM churches c
+        JOIN municipalities m ON c.municipality_id = m.municipality_id
+        ORDER BY c.church_name ASC
+    """)
+    churches = cur.fetchall()
+
+    if request.method == 'POST':
+        church_id = request.form.get('church_id')
+        hazard_type_id = request.form.get('hazard_type_id')
+        incident_date = request.form.get('incident_date') or None
+        report_description = request.form.get('report_description', '').strip()
+        damage_level = request.form.get('damage_level') or None
+
+        if not church_id or not hazard_type_id or not report_description:
+            flash('Please fill in Church, Hazard Type, and Report Description.', 'danger')
+            cur.close()
+            return render_template(
+                'edit_public_report.html',
+                report=report,
+                churches=churches,
+                hazard_types=hazard_types
+            )
+
+        cur.execute("""
+            UPDATE disaster_reports
+            SET church_id = %s,
+                hazard_type_id = %s,
+                incident_date = %s,
+                report_description = %s,
+                damage_level = %s
+            WHERE report_id = %s
+              AND reported_by = %s
+              AND report_status = 'Pending Validation'
+        """, (
+            church_id,
+            hazard_type_id,
+            incident_date,
+            report_description,
+            damage_level,
+            report_id,
+            session.get('user_id')
+        ))
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Your pending report was updated successfully.', 'success')
+        return redirect(url_for('public_reports'))
+
+    cur.close()
+    return render_template(
+        'edit_public_report.html',
+        report=report,
+        churches=churches,
+        hazard_types=hazard_types
+    )
 
 
 # ─── Delete Individual Report Image ───────────────────────────────────────────
