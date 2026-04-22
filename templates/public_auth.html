@@ -339,6 +339,53 @@
   color: var(--terracotta);
 }
 
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .auth-input {
+  padding-right: 78px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--brown-mid);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.password-toggle:hover {
+  color: var(--terracotta);
+}
+
+.otp-status-box {
+  margin-bottom: 14px;
+  padding: 14px 15px;
+  border-radius: 12px;
+  background: #fff8e8;
+  border: 1px solid rgba(201,168,76,0.35);
+}
+
+.otp-status-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 6px;
+}
+
+.otp-status-text {
+  font-size: 12px;
+  color: #7b573f;
+  line-height: 1.65;
+}
+
 @media (max-width: 980px) {
   .auth-shell {
     grid-template-columns: 1fr;
@@ -467,9 +514,21 @@
 
             <div class="auth-field full">
               <label class="auth-label">Password</label>
-              <input class="auth-input" type="password" name="password" placeholder="Create a password" minlength="8" required>
+              <div class="password-wrap">
+                <input class="auth-input" id="signupPassword" type="password" name="password" placeholder="Create a password" minlength="8" required>
+                <button class="password-toggle" type="button" onclick="togglePassword('signupPassword', this)">Show</button>
+              </div>
               <div class="auth-help">Minimum 8 characters.</div>
             </div>
+            
+            <div class="auth-field full">
+              <label class="auth-label">Confirm Password</label>
+              <div class="password-wrap">
+                <input class="auth-input" id="signupConfirmPassword" type="password" name="confirm_password" placeholder="Re-enter your password" minlength="8" required>
+                <button class="password-toggle" type="button" onclick="togglePassword('signupConfirmPassword', this)">Show</button>
+              </div>
+            </div>
+
           </div>
 
           <div class="auth-actions">
@@ -495,10 +554,14 @@
 
             <div class="auth-field full">
               <label class="auth-label">Password</label>
-              <input class="auth-input" type="password" name="password" placeholder="Enter your password" required>
+              <div class="password-wrap">
+                <input class="auth-input" id="loginPassword" type="password" name="password" placeholder="Enter your password" required>
+                <button class="password-toggle" type="button" onclick="togglePassword('loginPassword', this)">Show</button>
+              </div>
             </div>
-          </div>
 
+          </div>
+                       
           <div class="auth-actions">
             <button type="submit" class="auth-btn-primary">Log In</button>
             <a href="{{ url_for('signup', next=next_url) }}" class="auth-btn-secondary">Create Account</a>
@@ -514,6 +577,14 @@
         <div class="verify-email-display">
           Enter the 6-digit code sent to
           <strong>{{ email }}</strong>.
+        </div>
+
+        <div class="otp-status-box">
+          <div class="otp-status-title">Verification status guide</div>
+          <div class="otp-status-text">
+            Use the most recent 6-digit code sent to your email. The code expires in 10 minutes.
+            If the code is incorrect or expired, use <strong>Resend OTP</strong> below and try again.
+          </div>
         </div>
 
         <form method="POST" class="auth-form">
@@ -552,3 +623,21 @@
   </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      button.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      button.textContent = 'Show';
+    }
+  }
+</script>
+{% endblock %}
+
