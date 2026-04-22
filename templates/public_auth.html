@@ -1,0 +1,554 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if auth_mode == 'login' %}
+    Public Login
+  {% elif auth_mode == 'verify' %}
+    Verify Email
+  {% else %}
+    Create Account
+  {% endif %}
+{% endblock %}
+
+{% block extra_styles %}
+.auth-page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 48px;
+  background:
+    radial-gradient(circle at top left, rgba(201,168,76,0.10), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(193,68,14,0.08), transparent 30%),
+    linear-gradient(180deg, #f8f4ee 0%, #f3ede4 100%);
+}
+
+.auth-shell {
+  width: min(1120px, 100%);
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(61, 42, 31, 0.12);
+}
+
+.auth-brand {
+  position: relative;
+  padding: 42px 38px;
+  color: #fff;
+  background:
+    linear-gradient(160deg, rgba(58,39,29,0.98), rgba(95,66,48,0.95)),
+    radial-gradient(circle at 20% 20%, rgba(201,168,76,0.20), transparent 32%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 620px;
+}
+
+.auth-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
+    radial-gradient(circle at 80% 75%, rgba(201,168,76,0.10), transparent 25%);
+  pointer-events: none;
+}
+
+.brand-top,
+.brand-bottom {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #f7e7b5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-bottom: 22px;
+}
+
+.brand-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1.08;
+  margin: 0 0 12px;
+}
+
+.brand-subtitle {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.82);
+  max-width: 520px;
+  margin: 0;
+}
+
+.brand-panel {
+  margin-top: 28px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(6px);
+}
+
+.brand-panel h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #f6df96;
+}
+
+.brand-panel p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.82);
+}
+
+.brand-footer {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.brand-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.84);
+  font-size: 14px;
+}
+
+.brand-footer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #c9a84c;
+  box-shadow: 0 0 0 4px rgba(201,168,76,0.15);
+}
+
+.auth-panel {
+  padding: 34px 34px 30px;
+  background: #fffdf9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-panel-header {
+  margin-bottom: 18px;
+}
+
+.auth-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--terracotta);
+  margin-bottom: 10px;
+}
+
+.auth-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  line-height: 1.12;
+  color: var(--brown-dark);
+  margin: 0 0 10px;
+}
+
+.auth-subtext {
+  font-size: 14px;
+  color: var(--gray-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0 22px;
+}
+
+.auth-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  padding: 12px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  background: #fff;
+  border: 1px solid var(--parchment);
+  transition: all 0.2s ease;
+}
+
+.auth-tab:hover {
+  border-color: var(--gold);
+  color: var(--terracotta);
+}
+
+.auth-tab.active {
+  background: var(--brown-dark);
+  color: #fff;
+  border-color: var(--brown-dark);
+}
+
+.auth-card {
+  background: #fff;
+  border: 1px solid var(--parchment);
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: 0 4px 14px rgba(61, 42, 31, 0.05);
+}
+
+.auth-card + .auth-card {
+  margin-top: 16px;
+}
+
+.auth-card-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brown-dark);
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-field.full {
+  grid-column: 1 / -1;
+}
+
+.auth-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown-dark);
+}
+
+.auth-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--brown-dark);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+}
+
+.auth-help {
+  font-size: 12px;
+  color: var(--gray-muted);
+  line-height: 1.5;
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.auth-btn-primary,
+.auth-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn-primary {
+  background: var(--terracotta);
+  color: #fff;
+  border: none;
+}
+
+.auth-btn-primary:hover {
+  background: #a93a0c;
+  transform: translateY(-1px);
+}
+
+.auth-btn-secondary {
+  background: #fff;
+  color: var(--brown-dark);
+  border: 1.5px solid var(--parchment);
+}
+
+.auth-btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--terracotta);
+}
+
+.auth-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--gray-muted);
+  line-height: 1.65;
+}
+
+.verify-email-display {
+  font-size: 14px;
+  color: var(--brown-dark);
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+
+.verify-email-display strong {
+  color: var(--terracotta);
+}
+
+@media (max-width: 980px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand {
+    min-height: auto;
+    padding: 30px 24px;
+  }
+
+  .auth-panel {
+    padding: 24px 18px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-grid,
+  .auth-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-heading {
+    font-size: 26px;
+  }
+}
+{% endblock %}
+
+{% block content %}
+{% set next_url = session.get('public_next_url', url_for('public_reports', open_submit=1)) %}
+
+<div class="auth-page">
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <div class="brand-top">
+        <div class="brand-badge">Heritage Churches of Bohol</div>
+        <h1 class="brand-title">DRRM Information System</h1>
+        <p class="brand-subtitle">
+          Protecting heritage churches through timely reporting, public participation, and disaster monitoring across Bohol.
+        </p>
+
+        <div class="brand-panel">
+          <h3>Public reporting flow</h3>
+          <p>
+            Create an account, verify your email, and submit reports with supporting details and photos.
+            Once verified, you will be returned directly to the reporting page.
+          </p>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <div class="brand-footer-item">
+          <span class="brand-footer-dot"></span>
+          <span>Track incidents affecting heritage churches</span>
+        </div>
+        <div class="brand-footer-item">
+          <span class="brand-footer-dot"></span>
+          <span>Upload photo documentation for validation</span>
+        </div>
+        <div class="brand-footer-item">
+          <span class="brand-footer-dot"></span>
+          <span>Support disaster response and assessment</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-panel-header">
+        <div class="auth-eyebrow">Public Access</div>
+        <h2 class="auth-heading">
+          {% if auth_mode == 'login' %}
+            Welcome back
+          {% elif auth_mode == 'verify' %}
+            Verify your email
+          {% else %}
+            Create your account
+          {% endif %}
+        </h2>
+        <p class="auth-subtext">
+          {% if auth_mode == 'login' %}
+            Log in to continue your public report submission.
+          {% elif auth_mode == 'verify' %}
+            Enter the verification code sent to your email address.
+          {% else %}
+            Create a public account to submit disaster reports for heritage churches.
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="auth-tabs">
+        <a href="{{ url_for('signup', next=next_url) }}"
+           class="auth-tab {% if auth_mode == 'signup' %}active{% endif %}">
+          Create Account
+        </a>
+        <a href="{{ url_for('public_login', next=next_url) }}"
+           class="auth-tab {% if auth_mode == 'login' %}active{% endif %}">
+          Log In
+        </a>
+        <a href="{{ url_for('verify_email') }}"
+           class="auth-tab {% if auth_mode == 'verify' %}active{% endif %}">
+          Verify Email
+        </a>
+      </div>
+
+      {% if auth_mode == 'signup' %}
+      <div class="auth-card">
+        <h3 class="auth-card-title">Create Account</h3>
+        <form method="POST" class="auth-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          <div class="auth-grid">
+            <div class="auth-field full">
+              <label class="auth-label">Full Name</label>
+              <input class="auth-input" type="text" name="full_name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="auth-field">
+              <label class="auth-label">Username</label>
+              <input class="auth-input" type="text" name="username" placeholder="Choose a username" required>
+            </div>
+
+            <div class="auth-field">
+              <label class="auth-label">Email</label>
+              <input class="auth-input" type="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="auth-field full">
+              <label class="auth-label">Password</label>
+              <input class="auth-input" type="password" name="password" placeholder="Create a password" minlength="8" required>
+              <div class="auth-help">Minimum 8 characters.</div>
+            </div>
+          </div>
+
+          <div class="auth-actions">
+            <button type="submit" class="auth-btn-primary">Create Account</button>
+            <a href="{{ url_for('public_login', next=next_url) }}" class="auth-btn-secondary">Log In Instead</a>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if auth_mode == 'login' %}
+      <div class="auth-card">
+        <h3 class="auth-card-title">Log In</h3>
+        <form method="POST" class="auth-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          <div class="auth-grid">
+            <div class="auth-field full">
+              <label class="auth-label">Email</label>
+              <input class="auth-input" type="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="auth-field full">
+              <label class="auth-label">Password</label>
+              <input class="auth-input" type="password" name="password" placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <div class="auth-actions">
+            <button type="submit" class="auth-btn-primary">Log In</button>
+            <a href="{{ url_for('signup', next=next_url) }}" class="auth-btn-secondary">Create Account</a>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if auth_mode == 'verify' %}
+      <div class="auth-card">
+        <h3 class="auth-card-title">Verify Email</h3>
+
+        <div class="verify-email-display">
+          Enter the 6-digit code sent to
+          <strong>{{ email }}</strong>.
+        </div>
+
+        <form method="POST" class="auth-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          <div class="auth-grid">
+            <div class="auth-field full">
+              <label class="auth-label">OTP</label>
+              <input class="auth-input" type="text" name="otp" placeholder="Enter 6-digit verification code" required>
+              <div class="auth-help">Check your inbox for the verification code.</div>
+            </div>
+          </div>
+
+          <div class="auth-actions">
+            <button type="submit" class="auth-btn-primary">Verify Email</button>
+          </div>
+        </form>
+
+        <div class="auth-note">
+          Did not receive the code? Use the resend option below.
+        </div>
+
+        <form method="POST" action="{{ url_for('resend_verification_code') }}" class="auth-form" style="margin-top: 12px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          <div class="auth-actions">
+            <button type="submit" class="auth-btn-secondary">Resend OTP</button>
+            <a href="{{ url_for('public_login', next=next_url) }}" class="auth-btn-secondary">Back to Log In</a>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
