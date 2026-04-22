@@ -2,7 +2,7 @@
 
 {% block title %}Disaster Reports — Heritage Churches of Bohol{% endblock %}
 
-{% if session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+{% if session.get('role_name') in ['Super Admin', 'Municipal Admin', 'Church Authorized Personnel'] %}
 {% else %}
   {% block nav_public_reports %}active{% endblock %}
   {% block m_nav_public_reports %}active{% endblock %}
@@ -681,7 +681,7 @@
 
 {% block content %}
 {% import "_icons.html" as icons %}
-{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin'] %}
+{% set is_admin_view = session.get('role_name') in ['Super Admin', 'Municipal Admin', 'Church Authorized Personnel'] %}
 
 <section class="hero">
   <div class="hero-eyebrow">
@@ -887,7 +887,17 @@
                   {% elif report.report_status == 'Reported - Validated' %}badge-validated
                   {% elif report.report_status == 'Pending Validation' %}badge-pending
                   {% else %}badge-reported{% endif %}">
-                  {{ report.report_status }}
+                  {% if report.report_status == 'Pending Validation' %}
+                    Pending Validation
+                  {% elif report.report_status == 'Reported - Validated' %}
+                    Validated
+                  {% elif report.report_status == 'Under Assessment' %}
+                    Under Assessment
+                  {% elif report.report_status == 'Resolved' %}
+                    Resolved
+                  {% else %}
+                    {{ report.report_status }}
+                  {% endif %}
                 </span>
                 {% if report.damage_level %}
                 <span class="damage-pill">{{ report.damage_level }} Damage</span>
@@ -930,25 +940,33 @@
 
                 <div class="report-footer">
                   <a class="church-link" href="/church/{{ report.church_id }}">View church details →</a>
+                
+                  {% if session.get('role_name') == 'Public User'
+                        and report.reported_by|string == session.get('user_id')|string
+                        and report.report_status == 'Pending Validation' %}
+                  <a class="btn-secondary" href="{{ url_for('edit_public_report', report_id=report.report_id) }}">
+                    Edit Report
+                  </a>
+                  {% endif %}
                 </div>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <div class="no-results" id="noResultsMessage">No reports match the selected filters.</div>
-      </div>
-      {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">{{ icons.reports(48) }}</div>
-        <h3>No reports found</h3>
-        <p>No public disaster reports are available yet.</p>
-      </div>
-      {% endif %}
-    </div>
-
-  </div>
+                              </div>
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
+                
+                        <div class="no-results" id="noResultsMessage">No reports match the selected filters.</div>
+                      </div>
+                      {% else %}
+                      <div class="empty-state">
+                        <div class="empty-icon">{{ icons.reports(48) }}</div>
+                        <h3>No reports found</h3>
+                        <p>No public disaster reports are available yet.</p>
+                      </div>
+                      {% endif %}
+                  </div>
+              
+                </div>
 </main>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
