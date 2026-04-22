@@ -328,7 +328,7 @@ def public_login():
 
             if not user:
                 flash('Invalid email or password.', 'danger')
-                return render_template('public_login.html')
+                return render_template('public_auth.html', auth_mode='login')
 
             if not user.get('email_verified'):
                 flash('Please verify your email before logging in.', 'warning')
@@ -337,11 +337,11 @@ def public_login():
 
             if user.get('account_status') != 'active':
                 flash('Your account is inactive.', 'danger')
-                return render_template('public_login.html')
+                return render_template('public_auth.html', auth_mode='login')
 
             if not check_password_hash(user['password_hash'], password):
                 flash('Invalid email or password.', 'danger')
-                return render_template('public_login.html')
+                return render_template('public_auth.html', auth_mode='login')
 
             session['user_id'] = user['user_id']
             session['username'] = user['username']
@@ -356,7 +356,7 @@ def public_login():
             print('PUBLIC LOGIN ERROR:', e)
             flash('Unable to log in right now.', 'danger')
 
-    return render_template('public_login.html')
+    return render_template('public_auth.html', auth_mode='login')
 # ─── Logout ───────────────────────────────────────────────────────────────────
 @app.route('/logout')
 def logout():
@@ -389,11 +389,11 @@ def signup():
 
         if not full_name or not username or not email or not password:
             flash('Please fill in all required fields.', 'danger')
-            return render_template('signup.html')
+            return render_template('public_auth.html', auth_mode='signup')
 
         if len(password) < 8:
             flash('Password must be at least 8 characters long.', 'danger')
-            return render_template('signup.html')
+            return render_template('public_auth.html', auth_mode='signup')
 
         try:
             cur = mysql.connection.cursor()
@@ -408,7 +408,7 @@ def signup():
             if existing_user:
                 cur.close()
                 flash('Username or email already exists.', 'danger')
-                return render_template('signup.html')
+                return render_template('public_auth.html', auth_mode='signup')
 
             cur.execute("""
                 SELECT role_id
@@ -420,7 +420,7 @@ def signup():
             if not public_role:
                 cur.close()
                 flash('Public User role not found. Please contact the administrator.', 'danger')
-                return render_template('signup.html')
+                return render_template('public_auth.html', auth_mode='signup')
 
             otp = generate_otp()
             expiry = datetime.now() + timedelta(minutes=10)
@@ -468,7 +468,7 @@ def signup():
             print('SIGNUP ERROR:', e)
             flash('Unable to create account right now. Please try again.', 'danger')
 
-    return render_template('signup.html')
+    return render_template('public_auth.html', auth_mode='signup')
 #-----------public - logout----------
 @app.route('/public-logout')
 def public_logout():
@@ -493,7 +493,7 @@ def verify_email():
 
         if not otp_input:
             flash('Please enter the verification code.', 'danger')
-            return render_template('verify_email.html', email=email)
+            return render_template('public_auth.html', auth_mode='verify', email=email)
 
         try:
             cur = mysql.connection.cursor()
@@ -534,12 +534,12 @@ def verify_email():
             if expiry and datetime.now() > expiry:
                 cur.close()
                 flash('Verification code expired. Please request a new code.', 'danger')
-                return render_template('verify_email.html', email=email)
+                return render_template('public_auth.html', auth_mode='verify', email=email)
 
             if user['verification_code'] != otp_input:
                 cur.close()
                 flash('Invalid verification code.', 'danger')
-                return render_template('verify_email.html', email=email)
+                return render_template('public_auth.html', auth_mode='verify', email=email)
 
             cur.execute("""
                 UPDATE users
@@ -576,7 +576,7 @@ def verify_email():
             print('VERIFY EMAIL ERROR:', e)
             flash('Unable to verify email right now.', 'danger')
 
-    return render_template('verify_email.html', email=email)
+    return render_template('public_auth.html', auth_mode='verify', email=email)
 
 #-------------send otp again --------------------------
 @app.route('/resend-verification-code', methods=['POST'])
