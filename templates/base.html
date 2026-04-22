@@ -32,530 +32,746 @@
 
   --gray-muted: #7A6F66;
   --shadow: rgba(44, 24, 16, 0.12);
+  --sidebar-width: 272px;
 }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html, body {
-      min-height: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: var(--cream);
-      color: var(--brown-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
-
-    img,
-    svg,
-    iframe {
-      max-width: 100%;
-    }
-
-    .site-header {
-      background-color: var(--brown-dark);
-      background-image: none;
-      padding: 0 1.25rem;
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      border-bottom: 2px solid var(--gold);
-    }
-
-    .header-inner {
-      width: min(1850px, calc(100vw - 32px));
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 68px;
-      gap: 14px;
-      padding: 12px 0;
-    }
-
-    .logo-group {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-      min-width: 0;
-      flex-shrink: 1;
-      max-width: 100%;
-    }
-
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: var(--gold);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--brown-dark);
-      flex-shrink: 0;
-    }
-
-    .logo-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .logo-title {
-      font-family: 'Merriweather', serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-
-    .logo-sub {
-      font-size: 11px;
-      color: var(--gold-light);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-weight: 500;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-
-    .desktop-right {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      min-width: 0;
-    }
-
-    .admin-nav,
-    .public-nav {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .admin-nav a,
-    .public-nav a {
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 6px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .admin-nav a svg,
-    .public-nav a svg,
-    .mobile-nav a svg,
-    .mobile-logout svg,
-    .mobile-login svg,
-    .btn-logout svg,
-    .btn-login svg {
-      flex-shrink: 0;
-    }
-
-    .admin-nav a:hover,
-    .public-nav a:hover {
-      color: #fff;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .admin-nav a.active,
-    .public-nav a.active {
-      color: var(--gold-light);
-      background: rgba(201,168,76,0.15);
-    }
-
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      padding: 7px 14px;
-      min-width: 0;
-    }
-
-    .user-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--gold);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--brown-dark);
-      flex-shrink: 0;
-    }
-
-    .user-info {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .user-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-
-    .user-role {
-      font-size: 10px;
-      color: var(--gold-light);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      white-space: nowrap;
-    }
-
-    .btn-logout,
-    .btn-login {
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.15);
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-logout:hover,
-    .btn-login:hover {
-      color: #fff;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .menu-toggle {
-      display: none;
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .menu-toggle svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .mobile-menu {
-      display: none;
-      width: min(1850px, calc(100vw - 32px));
-      margin: 0 auto;
-      padding: 0 0 14px;
-    }
-
-    .mobile-menu.open {
-      display: block;
-    }
-
-    .mobile-panel {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 14px;
-    }
-
-    .mobile-user {
-      margin-bottom: 14px;
-    }
-
-    .mobile-nav {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .mobile-nav a,
-    .mobile-logout,
-    .mobile-login {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      padding: 11px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.88);
-    }
-
-    .mobile-nav a.active,
-    .mobile-logout.active,
-    .mobile-login.active {
-      color: var(--gold-light);
-      background: rgba(201,168,76,0.15);
-      border-color: rgba(201,168,76,0.22);
-    }
-
-    .mobile-logout,
-    .mobile-login {
-      color: #fff;
-      justify-content: center;
-    }
-
-    .flash-container {
-      width: min(1850px, calc(100vw - 32px));
-      margin: 16px auto 0;
-      padding: 0 16px;
-    }
-
-    .flash {
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      border: 1px solid transparent;
-      word-break: break-word;
-    }
-
-    .flash.success {
-      background: #d4edda;
-      color: #1f5134;
-      border-color: #b8dfc3;
-    }
-
-    .flash.danger {
-      background: #fde8e8;
-      color: #8a1f1f;
-      border-color: #f5c2c2;
-    }
-
-    .flash.warning {
-      background: #fff3cd;
-      color: #8a6b00;
-      border-color: #f2df98;
-    }
-
-    .flash.info {
-      background: #e7f1ff;
-      color: #1f4f8a;
-      border-color: #bdd7ff;
-    }
-
-    .site-footer {
-      background: var(--brown-dark);
-      color: rgba(255,255,255,0.4);
-      text-align: center;
-      padding: 18px;
-      font-size: 12px;
-      border-top: 2px solid var(--gold);
-      margin-top: 40px;
-    }
-
-    .site-footer strong {
-      color: var(--gold-light);
-    }
-
-    @media (max-width: 900px) {
-      .desktop-right {
-        display: none;
-      }
-
-      .menu-toggle {
-        display: inline-flex;
-        width: 46px;
-        height: 46px;
-        border-radius: 12px;
-      }
-
-      .site-header {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-      }
-
-      .header-inner {
-        width: 100%;
-        min-height: 64px;
-        gap: 10px;
-        padding: 10px 0;
-      }
-
-      .logo-group {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .logo-icon {
-        width: 34px;
-        height: 34px;
-      }
-
-      .logo-title {
-        font-size: 14px;
-      }
-
-      .logo-sub {
-        font-size: 10px;
-        letter-spacing: 0.8px;
-      }
-
-      .mobile-menu {
-        width: 100%;
-        margin: 0;
-        padding: 0 0 12px;
-      }
-
-      .mobile-panel {
-        border-radius: 12px;
-        padding: 12px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .header-inner,
-      .mobile-menu,
-      .flash-container {
-        width: min(100%, calc(100vw - 24px));
-      }
-
-      .flash-container {
-        padding: 0;
-      }
-
-      main,
-      .main-content,
-      .hero-inner,
-      .page-header-inner,
-      .church-hero-inner,
-      .main-layout {
-        max-width: 100%;
-        min-width: 0;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .site-header,
-      .flash-container {
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-      }
-
-      .header-inner,
-      .mobile-menu,
-      .flash-container {
-        width: min(100%, calc(100vw - 24px));
-      }
-
-      .header-inner {
-        gap: 8px;
-      }
-
-      .logo-group {
-        gap: 10px;
-      }
-
-      .logo-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-      }
-
-      .logo-icon svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      .logo-title {
-        font-size: 13px;
-        line-height: 1.15;
-      }
-
-      .logo-sub {
-        font-size: 9px;
-        letter-spacing: 0.7px;
-      }
-
-      .menu-toggle {
-        width: 44px;
-        height: 44px;
-      }
-
-      .mobile-nav a,
-      .mobile-logout,
-      .mobile-login {
-        padding: 10px 11px;
-        font-size: 13px;
-      }
-
-      .site-footer {
-        padding: 16px 12px;
-      }
-    }
-
-    {% block extra_styles %}{% endblock %}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--cream);
+  color: var(--brown-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+iframe {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+/* ---------- shared ---------- */
+
+.flash-container {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 16px auto 0;
+  padding: 0 16px;
+}
+
+.flash {
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  word-break: break-word;
+}
+
+.flash.success {
+  background: #d4edda;
+  color: #1f5134;
+  border-color: #b8dfc3;
+}
+
+.flash.danger {
+  background: #fde8e8;
+  color: #8a1f1f;
+  border-color: #f5c2c2;
+}
+
+.flash.warning {
+  background: #fff3cd;
+  color: #8a6b00;
+  border-color: #f2df98;
+}
+
+.flash.info {
+  background: #e7f1ff;
+  color: #1f4f8a;
+  border-color: #bdd7ff;
+}
+
+.site-footer {
+  background: var(--brown-dark);
+  color: rgba(255,255,255,0.42);
+  text-align: center;
+  padding: 18px;
+  font-size: 12px;
+  border-top: 2px solid var(--gold);
+  margin-top: 40px;
+}
+
+.site-footer strong {
+  color: var(--gold-light);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--brown-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.user-role {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--gold-light);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.action-btn,
+.action-btn-outline,
+.public-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-btn svg,
+.action-btn-outline svg,
+.public-link-btn svg,
+.public-nav a svg,
+.public-mobile-links a svg,
+.admin-side-nav a svg,
+.admin-mobile-links a svg {
+  flex-shrink: 0;
+}
+
+.action-btn {
+  background: var(--terracotta);
+  color: #fff;
+  border: none;
+}
+
+.action-btn:hover {
+  background: #a93a0c;
+  transform: translateY(-1px);
+}
+
+.action-btn-outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.action-btn-outline:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.public-link-btn {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.86);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.public-link-btn:hover {
+  background: rgba(255,255,255,0.11);
+  color: #fff;
+}
+
+.menu-toggle,
+.admin-mobile-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-toggle svg,
+.admin-mobile-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---------- public layout ---------- */
+
+.public-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 220;
+  background: var(--brown-dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 0 1.2rem;
+}
+
+.public-header-inner {
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--gold);
+  color: var(--brown-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-title {
+  font-family: 'Merriweather', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--gold-light);
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.public-desktop-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.public-nav a {
+  color: rgba(255,255,255,0.78);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.public-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
+.public-nav a.active {
+  color: var(--gold-light);
+  background: rgba(201,168,76,0.15);
+}
+
+.public-auth-actions,
+.public-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.public-user-chip {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.public-mobile-menu {
+  display: none;
+  width: min(1850px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 0 0 14px;
+}
+
+.public-mobile-menu.open {
+  display: block;
+}
+
+.public-mobile-panel {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.public-mobile-links {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.public-mobile-links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 11px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.88);
+}
+
+.public-mobile-links a.active {
+  color: var(--gold-light);
+  background: rgba(201,168,76,0.15);
+  border-color: rgba(201,168,76,0.24);
+}
+
+.public-mobile-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.public-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- admin layout ---------- */
+
+.admin-layout {
+  background: #f6f0e8;
+}
+
+.admin-shell {
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background:
+    linear-gradient(180deg, #2c1810 0%, #3b2418 100%);
+  border-right: 1px solid rgba(201,168,76,0.18);
+  color: #fff;
+  padding: 24px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  z-index: 320;
+  box-shadow: 10px 0 24px rgba(44, 24, 16, 0.08);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+
+.admin-brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--gold);
+  color: var(--brown-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-brand-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.admin-brand-text {
+  min-width: 0;
+}
+
+.admin-brand-title {
+  font-family: 'Merriweather', serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.admin-brand-sub {
+  font-size: 10px;
+  color: var(--gold-light);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  line-height: 1.2;
+}
+
+.admin-side-nav {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.admin-side-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 12px 13px;
+  border-radius: 12px;
+  color: rgba(255,255,255,0.82);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.admin-side-nav a:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.admin-side-nav a.active {
+  background: rgba(201,168,76,0.16);
+  color: var(--gold-light);
+}
+
+.admin-side-footer {
+  margin-top: auto;
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.admin-user-box {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.admin-content-wrap {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-mobile-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 260;
+  background: var(--brown-dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 0 1rem;
+}
+
+.admin-mobile-topbar-inner {
+  width: min(100%, 1600px);
+  margin: 0 auto;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.admin-mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.admin-mobile-brand .brand-title {
+  font-size: 14px;
+}
+
+.admin-mobile-brand .brand-sub {
+  font-size: 10px;
+}
+
+.admin-flash-container {
+  width: min(1850px, calc(100vw - 32px));
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-footer {
+  margin-top: 0;
+}
+
+.admin-overlay {
+  display: none;
+}
+
+@media (max-width: 1120px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: min(86vw, 300px);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-content-wrap {
+    margin-left: 0;
+  }
+
+  .admin-mobile-topbar {
+    display: block;
+  }
+
+  .admin-mobile-toggle {
+    display: inline-flex;
+  }
+
+  .admin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 12, 8, 0.42);
+    z-index: 300;
+  }
+
+  .admin-overlay.show {
+    display: block;
+  }
+
+  .admin-flash-container {
+    width: min(100%, calc(100vw - 24px));
+    padding: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .public-desktop-right {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .public-header {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  .public-header-inner {
+    width: 100%;
+    min-height: 68px;
+  }
+
+  .public-mobile-menu {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .flash-container,
+  .public-mobile-menu,
+  .public-header-inner {
+    width: min(100%, calc(100vw - 24px));
+  }
+
+  .flash-container {
+    padding: 0;
+  }
+
+  main,
+  .main-content,
+  .hero-inner,
+  .page-header-inner,
+  .church-hero-inner,
+  .main-layout {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .public-header,
+  .admin-mobile-topbar,
+  .flash-container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .brand-link,
+  .admin-mobile-brand {
+    gap: 10px;
+  }
+
+  .brand-icon,
+  .admin-brand-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-title {
+    font-size: 13px;
+  }
+
+  .brand-sub {
+    font-size: 9px;
+    letter-spacing: 0.7px;
+  }
+
+  .site-footer {
+    padding: 16px 12px;
+  }
+}
+
+{% block extra_styles %}{% endblock %}
   </style>
 </head>
-<body>
-  {% import "_icons.html" as icons %}
-  {% set role_name = session.get('role_name') %}
-  {% set is_admin_view = role_name in ['Super Admin', 'Municipal Admin'] %}
+{% import "_icons.html" as icons %}
+{% set role_name = session.get('role_name') %}
+{% set is_admin_view = role_name in ['Super Admin', 'Municipal Admin', 'Church Authorized Personnel'] %}
 
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="{% if is_admin_view %}/dashboard{% else %}/{% endif %}" class="logo-group">
-        <div class="logo-icon">{{ icons.church(20) }}</div>
-        <div class="logo-text">
-          <span class="logo-title">Heritage Churches of Bohol</span>
-          <span class="logo-sub">DRRM Information System</span>
+<body class="{% if is_admin_view %}admin-layout{% else %}public-layout{% endif %}">
+  
+  {% if is_admin_view %}
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <a href="{{ url_for('dashboard') }}" class="admin-brand">
+        <div class="admin-brand-icon">{{ icons.church(22) }}</div>
+        <div class="admin-brand-text">
+          <div class="admin-brand-title">Heritage Churches of Bohol</div>
+          <div class="admin-brand-sub">DRRM Information System</div>
         </div>
       </a>
 
-      <div class="desktop-right">
-        {% if is_admin_view %}
-          <nav class="admin-nav">
-            <a href="/dashboard" class="{% block nav_dashboard %}{% endblock %}">{{ icons.dashboard(16) }}<span>Dashboard</span></a>
-            <a href="/hazard-map" class="{% block nav_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
-            <a href="/admin/reports" class="{% block nav_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
-            <a href="/admin/analytics" class="{% block nav_analytics %}{% endblock %}">{{ icons.analytics(16) }}<span>Analytics</span></a>
-            {% if role_name == 'Super Admin' %}
-              <a href="/admin/users" class="{% block nav_users %}{% endblock %}">{{ icons.users(16) }}<span>Users</span></a>
-              <a href="/admin/logs" class="{% block nav_logs %}{% endblock %}">{{ icons.logs(16) }}<span>Logs</span></a>
-            {% endif %}
-          </nav>
+      <nav class="admin-side-nav">
+        <a href="{{ url_for('dashboard') }}" class="{% block nav_dashboard %}{% endblock %}">
+          {{ icons.dashboard(16) }}<span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('hazard_map') }}" class="{% block nav_hazard_map %}{% endblock %}">
+          {{ icons.map(16) }}<span>Hazard Map</span>
+        </a>
+        <a href="{{ url_for('view_reports') }}" class="{% block nav_reports %}{% endblock %}">
+          {{ icons.reports(16) }}<span>Reports</span>
+        </a>
+        <a href="{{ url_for('analytics') }}" class="{% block nav_analytics %}{% endblock %}">
+          {{ icons.analytics(16) }}<span>Analytics</span>
+        </a>
+        {% if role_name == 'Super Admin' %}
+        <a href="{{ url_for('admin_users') }}" class="{% block nav_users %}{% endblock %}">
+          {{ icons.users(16) }}<span>Users</span>
+        </a>
+        <a href="{{ url_for('audit_logs') }}" class="{% block nav_logs %}{% endblock %}">
+          {{ icons.logs(16) }}<span>Logs</span>
+        </a>
+        {% endif %}
+      </nav>
 
+      <div class="admin-side-footer">
+        <div class="admin-user-box">
           <div class="user-chip">
             <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
             <div class="user-info">
@@ -563,102 +779,219 @@
               <span class="user-role">{{ session.get('role_name', 'User') }}</span>
             </div>
           </div>
+        </div>
 
-          <a href="/logout" class="btn-logout">{{ icons.logout(16) }}<span>Logout</span></a>
-        {% else %}
-          <nav class="public-nav">
-            <a href="/" class="{% block nav_home %}{% endblock %}">{{ icons.church(16) }}<span>Churches</span></a>
-            <a href="/hazard-map" class="{% block nav_public_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
-            <a href="/reports" class="{% block nav_public_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
-            <a href="/about" class="{% block nav_about %}{% endblock %}">{{ icons.about(16) }}<span>About</span></a>
-          </nav>
-
-          {% if session.get('user_id') %}
-            <a href="/logout" class="btn-logout">{{ icons.logout(16) }}<span>Logout</span></a>
-          {% else %}
-            <a href="/public-login" class="btn-login">{{ icons.login(16) }}<span>Login</span></a>
-          {% endif %}
-        {% endif %}
+        <a href="{{ url_for('logout') }}" class="action-btn-outline">
+          {{ icons.logout(16) }}<span>Log Out</span>
+        </a>
       </div>
+    </aside>
 
-      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">
-        <span id="menuToggleIcon">{{ icons.menu(20) }}</span>
-      </button>
-    </div>
+    <div class="admin-overlay" id="adminOverlay"></div>
 
-    <div class="mobile-menu" id="mobileMenu">
-      <div class="mobile-panel">
-        {% if is_admin_view %}
-          <div class="mobile-user">
-            <div class="user-chip">
-              <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
-              <div class="user-info">
-                <span class="user-name">{{ session.get('full_name', 'User') }}</span>
-                <span class="user-role">{{ session.get('role_name', 'User') }}</span>
-              </div>
+    <div class="admin-content-wrap">
+      <div class="admin-mobile-topbar">
+        <div class="admin-mobile-topbar-inner">
+          <a href="{{ url_for('dashboard') }}" class="admin-mobile-brand">
+            <div class="brand-icon">{{ icons.church(20) }}</div>
+            <div class="brand-text">
+              <span class="brand-title">Heritage Churches of Bohol</span>
+              <span class="brand-sub">DRRM Information System</span>
             </div>
-          </div>
+          </a>
 
-          <nav class="mobile-nav">
-            <a href="/dashboard" class="{% block m_nav_dashboard %}{% endblock %}">{{ icons.dashboard(16) }}<span>Dashboard</span></a>
-            <a href="/hazard-map" class="{% block m_nav_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
-            <a href="/admin/reports" class="{% block m_nav_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
-            <a href="/admin/analytics" class="{% block m_nav_analytics %}{% endblock %}">{{ icons.analytics(16) }}<span>Analytics</span></a>
-            {% if role_name == 'Super Admin' %}
-              <a href="/admin/users" class="{% block m_nav_users %}{% endblock %}">{{ icons.users(16) }}<span>Users</span></a>
-              <a href="/admin/logs" class="{% block m_nav_logs %}{% endblock %}">{{ icons.logs(16) }}<span>Logs</span></a>
-            {% endif %}
-          </nav>
-
-          <a href="/logout" class="mobile-logout">{{ icons.logout(16) }}<span>Logout</span></a>
-        {% else %}
-          <nav class="mobile-nav">
-            <a href="/" class="{% block m_nav_home %}{% endblock %}">{{ icons.church(16) }}<span>Churches</span></a>
-            <a href="/hazard-map" class="{% block m_nav_public_hazard_map %}{% endblock %}">{{ icons.map(16) }}<span>Hazard Map</span></a>
-            <a href="/reports" class="{% block m_nav_public_reports %}{% endblock %}">{{ icons.reports(16) }}<span>Reports</span></a>
-            <a href="/about" class="{% block m_nav_about %}{% endblock %}">{{ icons.about(16) }}<span>About</span></a>
-          </nav>
-
-          {% if session.get('user_id') %}
-            <a href="/logout" class="mobile-logout">{{ icons.logout(16) }}<span>Logout</span></a>
-          {% else %}
-            <a href="/login" class="mobile-login">{{ icons.login(16) }}<span>Login</span></a>
-          {% endif %}
-        {% endif %}
+          <button class="admin-mobile-toggle" id="adminMenuToggle" type="button" aria-label="Toggle admin menu">
+            <span id="adminMenuToggleIcon">{{ icons.menu(20) }}</span>
+          </button>
+        </div>
       </div>
-    </div>
-  </header>
 
-  <div class="flash-container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+      <div class="flash-container admin-flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <main class="admin-main">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="site-footer admin-footer">
+        <strong>Heritage Churches of Bohol — DRRM Information System</strong><br>
+        Province of Bohol · Disaster Risk Reduction and Management Office
+      </footer>
+    </div>
   </div>
 
-  <main style="flex: 1; min-width: 0;">
-    {% block content %}{% endblock %}
-  </main>
+  {% else %}
+  <div class="public-shell">
+    <header class="public-header">
+      <div class="public-header-inner">
+        <a href="{{ url_for('index') }}" class="brand-link">
+          <div class="brand-icon">{{ icons.church(20) }}</div>
+          <div class="brand-text">
+            <span class="brand-title">Heritage Churches of Bohol</span>
+            <span class="brand-sub">DRRM Information System</span>
+          </div>
+        </a>
 
-  <footer class="site-footer">
-    <strong>Heritage Churches of Bohol — DRRM Information System</strong><br>
-    Province of Bohol · Disaster Risk Reduction and Management Office
-  </footer>
+        <div class="public-desktop-right">
+          <nav class="public-nav">
+            <a href="{{ url_for('index') }}" class="{% block nav_home %}{% endblock %}">
+              {{ icons.church(16) }}<span>Home</span>
+            </a>
+            <a href="{{ url_for('hazard_map') }}" class="{% block nav_public_hazard_map %}{% endblock %}">
+              {{ icons.map(16) }}<span>Hazard Map</span>
+            </a>
+            <a href="{{ url_for('public_reports') }}" class="{% block nav_public_reports %}{% endblock %}">
+              {{ icons.reports(16) }}<span>Reports</span>
+            </a>
+            <a href="{{ url_for('about') }}" class="{% block nav_about %}{% endblock %}">
+              {{ icons.about(16) }}<span>About</span>
+            </a>
+          </nav>
+
+          {% if role_name == 'Public User' and session.get('user_id') %}
+            <div class="public-user-actions">
+              <div class="public-user-chip">
+                <div class="user-chip">
+                  <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
+                  <div class="user-info">
+                    <span class="user-name">{{ session.get('full_name', 'User') }}</span>
+                    <span class="user-role">Public User</span>
+                  </div>
+                </div>
+              </div>
+
+              <a href="{{ url_for('public_reports', open_submit=1) }}" class="action-btn">
+                {{ icons.reports(16) }}<span>Submit Report</span>
+              </a>
+              <a href="{{ url_for('public_logout') }}" class="action-btn-outline">
+                {{ icons.logout(16) }}<span>Log Out</span>
+              </a>
+            </div>
+          {% else %}
+            <div class="public-auth-actions">
+              <a href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}" class="action-btn">
+                {{ icons.login(16) }}<span>Public Sign In</span>
+              </a>
+              <a href="{{ url_for('login') }}" class="action-btn-outline">
+                {{ icons.login(16) }}<span>Admin Login</span>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        <button class="menu-toggle" id="publicMenuToggle" type="button" aria-label="Toggle menu">
+          <span id="publicMenuToggleIcon">{{ icons.menu(20) }}</span>
+        </button>
+      </div>
+
+      <div class="public-mobile-menu" id="publicMobileMenu">
+        <div class="public-mobile-panel">
+          <nav class="public-mobile-links">
+            <a href="{{ url_for('index') }}" class="{% block m_nav_home %}{% endblock %}">
+              {{ icons.church(16) }}<span>Home</span>
+            </a>
+            <a href="{{ url_for('hazard_map') }}" class="{% block m_nav_public_hazard_map %}{% endblock %}">
+              {{ icons.map(16) }}<span>Hazard Map</span>
+            </a>
+            <a href="{{ url_for('public_reports') }}" class="{% block m_nav_public_reports %}{% endblock %}">
+              {{ icons.reports(16) }}<span>Reports</span>
+            </a>
+            <a href="{{ url_for('about') }}" class="{% block m_nav_about %}{% endblock %}">
+              {{ icons.about(16) }}<span>About</span>
+            </a>
+          </nav>
+
+          <div class="public-mobile-actions">
+            {% if role_name == 'Public User' and session.get('user_id') %}
+              <a href="{{ url_for('public_reports', open_submit=1) }}" class="action-btn">
+                {{ icons.reports(16) }}<span>Submit Report</span>
+              </a>
+              <a href="{{ url_for('public_logout') }}" class="action-btn-outline">
+                {{ icons.logout(16) }}<span>Log Out</span>
+              </a>
+            {% else %}
+              <a href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}" class="action-btn">
+                {{ icons.login(16) }}<span>Public Sign In</span>
+              </a>
+              <a href="{{ url_for('login') }}" class="action-btn-outline">
+                {{ icons.login(16) }}<span>Admin Login</span>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <main class="public-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <strong>Heritage Churches of Bohol — DRRM Information System</strong><br>
+      Province of Bohol · Disaster Risk Reduction and Management Office
+    </footer>
+  </div>
+  {% endif %}
 
   <script>
-    const menuToggle = document.getElementById('menuToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const menuToggleIcon = document.getElementById('menuToggleIcon');
+    const publicMenuToggle = document.getElementById('publicMenuToggle');
+    const publicMobileMenu = document.getElementById('publicMobileMenu');
+    const publicMenuToggleIcon = document.getElementById('publicMenuToggleIcon');
 
-    if (menuToggle && mobileMenu && menuToggleIcon) {
-      menuToggle.addEventListener('click', function () {
-        mobileMenu.classList.toggle('open');
-        menuToggleIcon.innerHTML = mobileMenu.classList.contains('open')
+    if (publicMenuToggle && publicMobileMenu && publicMenuToggleIcon) {
+      publicMenuToggle.addEventListener('click', function () {
+        publicMobileMenu.classList.toggle('open');
+        publicMenuToggleIcon.innerHTML = publicMobileMenu.classList.contains('open')
           ? `{{ icons.close(20)|replace('\n', '')|replace("'", "\\'")|safe }}`
           : `{{ icons.menu(20)|replace('\n', '')|replace("'", "\\'")|safe }}`;
+      });
+    }
+
+    const adminMenuToggle = document.getElementById('adminMenuToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+    const adminOverlay = document.getElementById('adminOverlay');
+    const adminMenuToggleIcon = document.getElementById('adminMenuToggleIcon');
+
+    function closeAdminSidebar() {
+      if (adminSidebar) adminSidebar.classList.remove('open');
+      if (adminOverlay) adminOverlay.classList.remove('show');
+      if (adminMenuToggleIcon) {
+        adminMenuToggleIcon.innerHTML = `{{ icons.menu(20)|replace('\n', '')|replace("'", "\\'")|safe }}`;
+      }
+    }
+
+    if (adminMenuToggle && adminSidebar && adminOverlay && adminMenuToggleIcon) {
+      adminMenuToggle.addEventListener('click', function () {
+        const isOpen = adminSidebar.classList.toggle('open');
+        adminOverlay.classList.toggle('show', isOpen);
+        adminMenuToggleIcon.innerHTML = isOpen
+          ? `{{ icons.close(20)|replace('\n', '')|replace("'", "\\'")|safe }}`
+          : `{{ icons.menu(20)|replace('\n', '')|replace("'", "\\'")|safe }}`;
+      });
+
+      adminOverlay.addEventListener('click', closeAdminSidebar);
+
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 1120) {
+          closeAdminSidebar();
+        }
       });
     }
   </script>
