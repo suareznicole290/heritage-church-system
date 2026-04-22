@@ -45,6 +45,14 @@
   line-height: 1.7;
 }
 
+.conditional-field {
+  display: none;
+}
+
+.conditional-field.show {
+  display: flex;
+}
+
 .btn-primary {
   padding: 10px 20px;
   background: var(--cream);
@@ -476,11 +484,13 @@
                   '{{ u.username|e }}',
                   '{{ u.email|e }}',
                   '{{ u.role_id }}',
+                  '{{ u.municipality_id or '' }}',
+                  '{{ u.assigned_church_id or '' }}',
                   '{{ u.account_status|e }}'
                 )">
                 Edit
               </button>
-
+        
               <form method="POST"
                     action="/admin/users/delete/{{ u.user_id }}"
                     onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.');"
@@ -536,9 +546,31 @@
 
         <div class="form-field">
           <label class="form-label-clean">Role</label>
-          <select class="form-select-clean" name="role_id" required>
+          <select class="form-select-clean" name="role_id" id="add_role_id" required>
             {% for r in roles %}
-            <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+            <option value="{{ r.role_id }}" data-role-name="{{ r.role_name }}">{{ r.role_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="form-field">
+          <label class="form-label-clean">Municipality</label>
+          <select class="form-select-clean" name="municipality_id" id="add_municipality_id">
+            <option value="">Select municipality</option>
+            {% for m in municipalities %}
+            <option value="{{ m.municipality_id }}">{{ m.municipality_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="form-field form-field-full conditional-field" id="add_church_field">
+          <label class="form-label-clean">Assigned Church</label>
+          <select class="form-select-clean" name="assigned_church_id" id="add_assigned_church_id">
+            <option value="">Select church</option>
+            {% for c in churches %}
+            <option value="{{ c.church_id }}" data-municipality-id="{{ c.municipality_id }}">
+              {{ c.church_name }} — {{ c.municipality_name }}
+            </option>
             {% endfor %}
           </select>
         </div>
@@ -590,7 +622,29 @@
           <label class="form-label-clean">Role</label>
           <select class="form-select-clean" name="role_id" id="edit_role_id" required>
             {% for r in roles %}
-            <option value="{{ r.role_id }}">{{ r.role_name }}</option>
+            <option value="{{ r.role_id }}" data-role-name="{{ r.role_name }}">{{ r.role_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label-clean">Municipality</label>
+          <select class="form-select-clean" name="municipality_id" id="edit_municipality_id">
+            <option value="">Select municipality</option>
+            {% for m in municipalities %}
+            <option value="{{ m.municipality_id }}">{{ m.municipality_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="form-field form-field-full conditional-field" id="edit_church_field">
+          <label class="form-label-clean">Assigned Church</label>
+          <select class="form-select-clean" name="assigned_church_id" id="edit_assigned_church_id">
+            <option value="">Select church</option>
+            {% for c in churches %}
+            <option value="{{ c.church_id }}" data-municipality-id="{{ c.municipality_id }}">
+              {{ c.church_name }} — {{ c.municipality_name }}
+            </option>
             {% endfor %}
           </select>
         </div>
@@ -618,6 +672,16 @@
 function openAddModal() {
   const modal = document.getElementById('addUserModal');
   if (modal) {
+    const roleSelect = document.getElementById('add_role_id');
+    const municipalityField = document.getElementById('add_municipality_id');
+    const churchField = document.getElementById('add_assigned_church_id');
+
+    if (roleSelect) roleSelect.selectedIndex = 0;
+    if (municipalityField) municipalityField.value = '';
+    if (churchField) churchField.value = '';
+
+    updateUserRoleFields('add');
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -631,7 +695,7 @@ function closeAddModal() {
   }
 }
 
-function openEditModal(userId, fullName, username, email, roleId, accountStatus) {
+  function openEditModal(userId, fullName, username, email, roleId, municipalityId, assignedChurchId, accountStatus) {
   const form = document.getElementById('editUserForm');
   if (!form) return;
 
@@ -642,7 +706,11 @@ function openEditModal(userId, fullName, username, email, roleId, accountStatus)
   document.getElementById('edit_email').value = email;
   document.getElementById('edit_password').value = '';
   document.getElementById('edit_role_id').value = roleId;
+  document.getElementById('edit_municipality_id').value = municipalityId || '';
+  document.getElementById('edit_assigned_church_id').value = assignedChurchId || '';
   document.getElementById('edit_account_status').value = accountStatus;
+
+  updateUserRoleFields('edit');
 
   const modal = document.getElementById('editUserModal');
   if (modal) {
@@ -650,7 +718,7 @@ function openEditModal(userId, fullName, username, email, roleId, accountStatus)
     document.body.style.overflow = 'hidden';
   }
 }
-
+  
 function closeEditModal() {
   const modal = document.getElementById('editUserModal');
   if (modal) {
@@ -671,6 +739,80 @@ const editUserModal = document.getElementById('editUserModal');
 if (editUserModal) {
   editUserModal.addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
+  });
+}
+
+function getSelectedRoleName(selectElement) {
+  if (!selectElement) return '';
+  const selectedOption = selectElement.options[selectElement.selectedIndex];
+  return selectedOption ? (selectedOption.dataset.roleName || '') : '';
+}
+
+function updateUserRoleFields(prefix) {
+  const roleSelect = document.getElementById(prefix + '_role_id');
+  const municipalityField = document.getElementById(prefix + '_municipality_id');
+  const churchFieldWrap = document.getElementById(prefix + '_church_field');
+  const churchSelect = document.getElementById(prefix + '_assigned_church_id');
+
+  if (!roleSelect || !municipalityField || !churchFieldWrap || !churchSelect) return;
+
+  const roleName = getSelectedRoleName(roleSelect);
+  const isChurchAuthorized = roleName === 'Church Authorized Personnel';
+
+  if (isChurchAuthorized) {
+    churchFieldWrap.classList.add('show');
+    municipalityField.setAttribute('disabled', 'disabled');
+
+    const selectedChurchOption = churchSelect.options[churchSelect.selectedIndex];
+    if (selectedChurchOption && selectedChurchOption.dataset.municipalityId) {
+      municipalityField.value = selectedChurchOption.dataset.municipalityId;
+    }
+  } else {
+    churchFieldWrap.classList.remove('show');
+    churchSelect.value = '';
+    municipalityField.removeAttribute('disabled');
+  }
+}
+
+function syncMunicipalityFromChurch(prefix) {
+  const churchSelect = document.getElementById(prefix + '_assigned_church_id');
+  const municipalityField = document.getElementById(prefix + '_municipality_id');
+
+  if (!churchSelect || !municipalityField) return;
+
+  const selectedOption = churchSelect.options[churchSelect.selectedIndex];
+  const municipalityId = selectedOption ? selectedOption.dataset.municipalityId : '';
+
+  if (municipalityId) {
+    municipalityField.value = municipalityId;
+  }
+}
+
+const addRoleSelect = document.getElementById('add_role_id');
+if (addRoleSelect) {
+  addRoleSelect.addEventListener('change', function() {
+    updateUserRoleFields('add');
+  });
+}
+
+const editRoleSelect = document.getElementById('edit_role_id');
+if (editRoleSelect) {
+  editRoleSelect.addEventListener('change', function() {
+    updateUserRoleFields('edit');
+  });
+}
+
+const addChurchSelect = document.getElementById('add_assigned_church_id');
+if (addChurchSelect) {
+  addChurchSelect.addEventListener('change', function() {
+    syncMunicipalityFromChurch('add');
+  });
+}
+
+const editChurchSelect = document.getElementById('edit_assigned_church_id');
+if (editChurchSelect) {
+  editChurchSelect.addEventListener('change', function() {
+    syncMunicipalityFromChurch('edit');
   });
 }
 </script>
