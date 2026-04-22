@@ -254,6 +254,71 @@
   transform: translateY(-1px);
 }
 
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border: 1.5px solid var(--parchment);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--brown-dark);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, color 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--terracotta);
+  transform: translateY(-1px);
+}
+
+.submit-gate {
+  display: grid;
+  gap: 14px;
+}
+
+.submit-gate-note {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--gray-muted);
+}
+
+.submit-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.submit-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(201,168,76,0.12);
+  color: var(--brown-dark);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+.restored-note {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff8e8;
+  border: 1px solid rgba(201,168,76,0.35);
+  color: #7b573f;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
 .reports-accordion {
   display: grid;
 }
@@ -674,78 +739,109 @@
         </div>
       </div>
 
-      <div class="report-submit-card">
-        <div class="report-submit-header">
-          <div class="report-submit-title">Submit a Public Report</div>
+      {% if not is_admin_view %}
+      <div class="report-submit-card" id="submit-report-card">
+  <div class="report-submit-header">
+    <div class="report-submit-title">Submit a Public Report</div>
+  </div>
+
+  <div class="report-submit-body">
+    {% if show_submit_form %}
+      {% if pending_public_report %}
+      <div class="restored-note">
+        Your previous report details were restored. For security reasons, please re-attach your photo uploads before submitting.
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('submit_public_report') }}" enctype="multipart/form-data" class="public-report-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Church</label>
+            <select class="form-input" name="church_id" required>
+              <option value="">Select church</option>
+              {% for church in churches %}
+              <option value="{{ church.church_id }}"
+                {% if pending_public_report.get('church_id')|string == church.church_id|string %}selected{% endif %}>
+                {{ church.church_name }} — {{ church.municipality_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Hazard Type</label>
+            <select class="form-input" name="hazard_type_id" required>
+              <option value="">Select hazard</option>
+              {% for h in hazard_types %}
+              <option value="{{ h.hazard_type_id }}"
+                {% if pending_public_report.get('hazard_type_id')|string == h.hazard_type_id|string %}selected{% endif %}>
+                {{ h.hazard_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Incident Date</label>
+            <input class="form-input" type="date" name="incident_date" value="{{ pending_public_report.get('incident_date', '') }}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Damage Level</label>
+            <select class="form-input" name="damage_level">
+              <option value="">Select damage level</option>
+              <option value="Minor" {% if pending_public_report.get('damage_level') == 'Minor' %}selected{% endif %}>Minor</option>
+              <option value="Moderate" {% if pending_public_report.get('damage_level') == 'Moderate' %}selected{% endif %}>Moderate</option>
+              <option value="Major" {% if pending_public_report.get('damage_level') == 'Major' %}selected{% endif %}>Major</option>
+              <option value="Destroyed" {% if pending_public_report.get('damage_level') == 'Destroyed' %}selected{% endif %}>Destroyed</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" name="report_description" rows="5" required placeholder="Describe what happened...">{{ pending_public_report.get('report_description', '') }}</textarea>
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Upload Photo(s)</label>
+            <p style="font-size: 12px; color: var(--gray-muted); margin-top: -4px; margin-bottom: 8px;">
+              Please attach your photo uploads before submitting.
+            </p>
+            <input class="form-input" type="file" name="report_images" accept="image/*" multiple>
+          </div>
+
+          <div class="form-group full">
+            <button type="submit" class="btn-primary">Submit Report</button>
+          </div>
         </div>
-        <div class="report-submit-body">
-          <form method="POST" action="/submit-public-report" enctype="multipart/form-data" class="public-report-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Church</label>
-                <select class="form-input" name="church_id" required>
-                  <option value="">Select church</option>
-                  {% for church in churches %}
-                  <option value="{{ church.church_id }}"
-                    {% if pending_public_report.get('church_id')|string == church.church_id|string %}selected{% endif %}>
-                    {{ church.church_name }} — {{ church.municipality_name }}
-                  </option>
-                  {% endfor %}
-                </select>
-              </div>
+      </form>
 
-              <div class="form-group">
-                <label class="form-label">Hazard Type</label>
-                <select class="form-input" name="hazard_type_id" required>
-                  <option value="">Select hazard</option>
-                  {% for h in hazard_types %}
-                  <option value="{{ h.hazard_type_id }}"
-                    {% if pending_public_report.get('hazard_type_id')|string == h.hazard_type_id|string %}selected{% endif %}>
-                    {{ h.hazard_name }}
-                  </option>
-                  {% endfor %}
-                </select>
-              </div>
+    {% else %}
+      <div class="submit-gate">
+        <div class="submit-gate-badge">Public report submission</div>
 
-              <div class="form-group">
-                <label class="form-label">Incident Date</label>
-                <input class="form-input" type="date" name="incident_date" value="{{ pending_public_report.get('incident_date', '') }}">
-              </div>
+        <div class="submit-gate-note">
+          To submit a disaster report, please create an account or log in first.
+          After authentication, you will be returned here and the full report form will be shown.
+        </div>
 
-              <div class="form-group">
-                <label class="form-label">Damage Level</label>
-                <select class="form-input" name="damage_level">
-                  <option value="">Select damage level</option>
-                  <option value="Minor" {% if pending_public_report.get('damage_level') == 'Minor' %}selected{% endif %}>Minor</option>
-                  <option value="Moderate" {% if pending_public_report.get('damage_level') == 'Moderate' %}selected{% endif %}>Moderate</option>
-                  <option value="Major" {% if pending_public_report.get('damage_level') == 'Major' %}selected{% endif %}>Major</option>
-                  <option value="Destroyed" {% if pending_public_report.get('damage_level') == 'Destroyed' %}selected{% endif %}>Destroyed</option>
-                </select>
-              </div>
-
-              <div class="form-group full">
-                <label class="form-label">Description</label>
-                <textarea class="form-textarea" name="report_description" rows="5" required placeholder="Describe what happened...">{{ pending_public_report.get('report_description', '') }}</textarea>
-              </div>
-
-              <div class="form-group full">
-                <label class="form-label">Upload Photo(s)</label>
-                <p style="font-size: 12px; color: var(--gray-muted); margin-top: -4px; margin-bottom: 8px;">
-                  If you were redirected to sign up or log in, your report details were restored automatically. Please re-attach your photo uploads before submitting.
-                </p>
-                <input class="form-input" type="file" name="report_images" accept="image/*" multiple>
-              </div>
-
-              <div class="form-group full">
-                <button type="submit" class="btn-primary">Submit Report</button>
-              </div>
-            </div>
-          </form>
+        <div class="submit-gate-actions">
+          <a class="btn-primary" href="{{ url_for('signup', next=url_for('public_reports', open_submit=1)) }}">
+            Create Account
+          </a>
+          <a class="btn-secondary" href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}">
+            Log In
+          </a>
         </div>
       </div>
-    </div>
-
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+  </div>
+  
     <div class="right-side">
       {% if reports %}
       <div class="reports-shell">
@@ -934,4 +1030,15 @@
     }
   });
 </script>
+
+{% if open_submit %}
+<script>
+  window.addEventListener('load', function () {
+    const submitCard = document.getElementById('submit-report-card');
+    if (submitCard) {
+      submitCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+</script>
+{% endif %}
 {% endblock %}
