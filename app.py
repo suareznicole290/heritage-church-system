@@ -304,10 +304,12 @@ def login():
 #-------------public log-in------------
 @app.route('/public-login', methods=['GET', 'POST'])
 def public_login():
+    set_public_next_url()
+
     if 'user_id' in session:
         if session.get('role_name') in ('Super Admin', 'Municipal Admin'):
             return redirect(url_for('dashboard'))
-        return redirect(url_for('index'))
+        return redirect(pop_public_next_url())
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -348,14 +350,13 @@ def public_login():
             session['municipality_id'] = user['municipality_id']
 
             flash('Logged in successfully.', 'success')
-            return redirect(url_for('public_reports'))
+            return redirect(pop_public_next_url())
 
         except Exception as e:
             print('PUBLIC LOGIN ERROR:', e)
             flash('Unable to log in right now.', 'danger')
 
     return render_template('public_login.html')
-
 # ─── Logout ───────────────────────────────────────────────────────────────────
 @app.route('/logout')
 def logout():
@@ -375,9 +376,11 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
-#-----------Sign-up---------
+#-----------Sign-up---------    
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    set_public_next_url()
+
     if request.method == 'POST':
         full_name = request.form.get('full_name', '').strip()
         username = request.form.get('username', '').strip()
@@ -386,6 +389,10 @@ def signup():
 
         if not full_name or not username or not email or not password:
             flash('Please fill in all required fields.', 'danger')
+            return render_template('signup.html')
+
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
             return render_template('signup.html')
 
         try:
@@ -450,7 +457,7 @@ def signup():
 
             mysql.connection.commit()
             cur.close()
-            
+
             session['pending_verification_email'] = email
 
             flash('Account created. Please check your email for the verification code.', 'success')
@@ -462,7 +469,6 @@ def signup():
             flash('Unable to create account right now. Please try again.', 'danger')
 
     return render_template('signup.html')
-
 #-----------public - logout----------
 @app.route('/public-logout')
 def public_logout():
@@ -472,8 +478,10 @@ def public_logout():
     return redirect(url_for('index'))
 
 #---------------verify-email-------------
+
 @app.route('/verify-email', methods=['GET', 'POST'])
 def verify_email():
+    set_public_next_url()
     email = session.get('pending_verification_email')
 
     if not email:
@@ -520,12 +528,12 @@ def verify_email():
                 session['municipality_id'] = verified_user['municipality_id']
 
                 flash('Your email is already verified. You are now logged in.', 'info')
-                return redirect(url_for('public_reports'))
-                
+                return redirect(pop_public_next_url())
+
             expiry = user['verification_expiry']
             if expiry and datetime.now() > expiry:
                 cur.close()
-                flash('Verification code expired. Please sign up again or request a new code later.', 'danger')
+                flash('Verification code expired. Please request a new code.', 'danger')
                 return render_template('verify_email.html', email=email)
 
             if user['verification_code'] != otp_input:
@@ -562,13 +570,60 @@ def verify_email():
             session['municipality_id'] = verified_user['municipality_id']
 
             flash('Email verified successfully. You are now logged in.', 'success')
-            return redirect(url_for('public_reports'))
+            return redirect(pop_public_next_url())
 
         except Exception as e:
             print('VERIFY EMAIL ERROR:', e)
             flash('Unable to verify email right now.', 'danger')
 
     return render_template('verify_email.html', email=email)
+
+#-------------send otp again --------------------------
+@app.route('/resend-verification-code', methods=['POST'])
+def resend_verification_code():
+    set_public_next_url()
+    email = session.get('pending_verification_email')
+
+    if not email:
+        flash('No pending verification email found. Please sign up first.', 'warning')
+        return redirect(url_for('signup'))
+
+    try:
+        otp = generate_otp()
+        expiry = datetime.now() + timedelta(minutes=10)
+
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            UPDATE users
+            SET verification_code = %s,
+                verification_expiry = %s
+            WHERE email = %s AND email_verified = 0
+        """, (otp, expiry, email))
+        mysql.connection.commit()
+        cur.close()
+
+        send_verification_email(email, otp)
+
+        flash('A new verification code has been sent to your email.', 'success')
+
+    except Exception as e:
+        print('RESEND OTP ERROR:', e)
+        flash('Unable to resend verification code right now.', 'danger')
+
+    return redirect(url_for('verify_email'))
+
+def set_public_next_url():
+    next_url = request.args.get('next') or request.form.get('next')
+
+    if next_url:
+        session['public_next_url'] = next_url
+    elif 'public_next_url' not in session:
+        session['public_next_url'] = url_for('public_reports', open_submit=1)
+
+
+def pop_public_next_url():
+    return session.pop('public_next_url', url_for('public_reports', open_submit=1))
+    
 # ─── Admin Dashboard ──────────────────────────────────────────────────────────
 @app.route('/dashboard')
 @admin_required
@@ -1193,6 +1248,9 @@ def public_reports():
     churches = cur.fetchall()
 
     pending_public_report = session.get('pending_public_report', {})
+    show_submit_form = session.get('role_name') == 'Public User'
+    open_submit = request.args.get('open_submit') == '1'
+
     cur.close()
 
     return render_template(
@@ -1202,8 +1260,11 @@ def public_reports():
         hazard_types=hazard_types,
         municipalities=municipalities,
         churches=churches,
-        pending_public_report=pending_public_report
-    )            
+        pending_public_report=pending_public_report,
+        show_submit_form=show_submit_form,
+        open_submit=open_submit
+    )
+       
 # ─── Public About Page ────────────────────────────────────────────────────────
 @app.route('/about')
 def about():
@@ -2115,8 +2176,14 @@ def submit_public_report():
             'report_description': request.form.get('report_description', '').strip()
         }
 
-        flash('Please log in or sign up first. Your report details were saved, but you will need to re-attach any photo uploads.', 'warning')
-        return redirect(url_for('public_login'))
+        session['public_next_url'] = url_for('public_reports', open_submit=1)
+
+        flash(
+            'Please create an account or log in first. '
+            'Your report details were saved, but you will need to re-attach any photo uploads.',
+            'warning'
+        )
+        return redirect(url_for('signup', next=url_for('public_reports', open_submit=1)))
 
     church_id = request.form.get('church_id')
     hazard_type_id = request.form.get('hazard_type_id')
@@ -2169,6 +2236,7 @@ def submit_public_report():
         flash(f'Error submitting report: {str(e)}', 'danger')
 
     return redirect(url_for('public_reports'))
+
 
 # ─── Delete Individual Report Image ───────────────────────────────────────────
 @app.route('/admin/delete-report-image/<int:report_image_id>/<int:report_id>/<int:church_id>', methods=['POST'])
