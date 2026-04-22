@@ -2773,16 +2773,24 @@ def admin_users():
     cur.execute("SELECT * FROM municipalities ORDER BY municipality_name ASC")
     municipalities = cur.fetchall()
 
+    cur.execute("""
+        SELECT c.church_id, c.church_name, c.municipality_id, m.municipality_name
+        FROM churches c
+        JOIN municipalities m ON c.municipality_id = m.municipality_id
+        ORDER BY c.church_name ASC
+    """)
+    churches = cur.fetchall()
+
     cur.close()
 
     return render_template(
         'users.html',
         users=users,
         roles=roles,
-        municipalities=municipalities
+        municipalities=municipalities,
+        churches=churches
     )
-
-
+    
 # ─── Add User ─────────────────────────────────────────────────────────────────
 @app.route('/admin/users/add', methods=['POST'])
 @login_required
