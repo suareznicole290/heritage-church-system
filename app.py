@@ -386,13 +386,17 @@ def signup():
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
 
-        if not full_name or not username or not email or not password:
+        if not full_name or not username or not email or not password or not confirm_password:
             flash('Please fill in all required fields.', 'danger')
             return render_template('public_auth.html', auth_mode='signup')
 
         if len(password) < 8:
             flash('Password must be at least 8 characters long.', 'danger')
+            return render_template('public_auth.html', auth_mode='signup')
+        if password != confirm_password:
+            flash('Password and Confirm Password do not match.', 'danger')
             return render_template('public_auth.html', auth_mode='signup')
 
         try:
