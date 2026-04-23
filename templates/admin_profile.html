@@ -1,74 +1,321 @@
 {% extends "base.html" %}
 {% block title %}Admin Profile{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">Admin Profile</h2>
+{% block extra_styles %}
+.profile-page {
+  padding: 28px 0 36px;
+}
 
-  <div class="row g-4">
-    <div class="col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h4 class="mb-3">Profile Information</h4>
+.profile-shell {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+}
+
+.profile-header {
+  margin-bottom: 22px;
+}
+
+.profile-title {
+  font-family: 'Merriweather', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 6px;
+}
+
+.profile-subtitle {
+  font-size: 14px;
+  color: var(--gray-muted);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 22px;
+}
+
+.profile-card {
+  background: #fff;
+  border: 1px solid rgba(44, 24, 16, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(44, 24, 16, 0.08);
+  overflow: hidden;
+}
+
+.profile-card-head {
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(44, 24, 16, 0.08);
+  background: linear-gradient(180deg, #fff, #fcf8f2);
+}
+
+.profile-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  margin-bottom: 4px;
+}
+
+.profile-card-sub {
+  font-size: 13px;
+  color: var(--gray-muted);
+}
+
+.profile-card-body {
+  padding: 22px;
+}
+
+.profile-top-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8f2ea;
+  border: 1px solid rgba(44, 24, 16, 0.06);
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--brown-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-user-meta {
+  min-width: 0;
+}
+
+.profile-user-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brown-dark);
+  line-height: 1.2;
+}
+
+.profile-user-role {
+  font-size: 12px;
+  color: var(--brown-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.form-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(44, 24, 16, 0.14);
+  background: #fff;
+  font-size: 14px;
+  color: var(--brown-dark);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.14);
+}
+
+.form-input[readonly] {
+  background: #f6f1ea;
+  color: var(--brown-soft);
+}
+
+.form-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 12px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-btn:hover {
+  background: #a93a0c;
+  transform: translateY(-1px);
+}
+
+.profile-btn.secondary {
+  background: var(--brown-dark);
+}
+
+.profile-btn.secondary:hover {
+  background: #1f120d;
+}
+
+.password-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--gray-muted);
+}
+
+@media (max-width: 900px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-title {
+    font-size: 24px;
+  }
+
+  .profile-card-head,
+  .profile-card-body {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="profile-shell">
+    <div class="profile-header">
+      <div class="profile-title">Admin Profile</div>
+      <div class="profile-subtitle">Manage your account information and password.</div>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-card">
+        <div class="profile-card-head">
+          <div class="profile-card-title">Profile Information</div>
+          <div class="profile-card-sub">Update your basic account details.</div>
+        </div>
+
+        <div class="profile-card-body">
+          <div class="profile-top-user">
+            <div class="profile-avatar">
+              {{ user.full_name[0] if user.full_name else 'A' }}
+            </div>
+            <div class="profile-user-meta">
+              <div class="profile-user-name">{{ user.full_name }}</div>
+              <div class="profile-user-role">{{ user.role_name }}</div>
+            </div>
+          </div>
 
           <form method="POST" action="{{ url_for('admin_update_profile') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="mb-3">
-              <label class="form-label">Full Name</label>
-              <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="full_name" class="form-input" value="{{ user.full_name }}" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-input" value="{{ user.username }}" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" value="{{ user.email }}" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <input type="text" class="form-input" value="{{ user.role_name }}" readonly>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Municipality</label>
+                <input type="text" class="form-input" value="{{ user.municipality_name or 'N/A' }}" readonly>
+              </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Username</label>
-              <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+            <div class="form-actions">
+              <button type="submit" class="profile-btn">Update Profile</button>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Role</label>
-              <input type="text" class="form-control" value="{{ user.role_name }}" readonly>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Municipality</label>
-              <input type="text" class="form-control" value="{{ user.municipality_name or 'N/A' }}" readonly>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Update Profile</button>
           </form>
         </div>
       </div>
-    </div>
 
-    <div class="col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h4 class="mb-3">Change Password</h4>
+      <div class="profile-card">
+        <div class="profile-card-head">
+          <div class="profile-card-title">Change Password</div>
+          <div class="profile-card-sub">Use a strong password with at least 8 characters.</div>
+        </div>
 
+        <div class="profile-card-body">
           <form method="POST" action="{{ url_for('admin_change_password') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="mb-3">
-              <label class="form-label">Current Password</label>
-              <input type="password" name="current_password" class="form-control" required>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Current Password</label>
+                <input type="password" name="current_password" class="form-input" required>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">New Password</label>
+                <input type="password" name="new_password" class="form-input" minlength="8" required>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" name="confirm_password" class="form-input" minlength="8" required>
+              </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">New Password</label>
-              <input type="password" name="new_password" class="form-control" minlength="8" required>
+            <div class="password-note">
+              Make sure your new password is easy for you to remember but hard for others to guess.
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" name="confirm_password" class="form-control" minlength="8" required>
+            <div class="form-actions">
+              <button type="submit" class="profile-btn secondary">Change Password</button>
             </div>
-
-            <button type="submit" class="btn btn-warning">Change Password</button>
           </form>
         </div>
       </div>
