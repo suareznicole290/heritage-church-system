@@ -71,7 +71,6 @@ def is_valid_image(file):
 def generate_otp():
     return str(random.randint(100000, 999999))
 
-
 def send_verification_email(recipient_email, otp):
     msg = Message(
         subject='Verify Your Email - Heritage Churches of Bohol',
@@ -87,6 +86,29 @@ If you did not request this, please ignore this email.
 
 Heritage Churches of Bohol
 DRRM Information System
+"""
+    mail.send(msg)
+
+
+def send_password_reset_email(email, otp):
+    msg = Message(
+        subject='Password Reset Code - Heritage Churches of Bohol DRRM Information System',
+        recipients=[email]
+    )
+    msg.body = f"""Hello,
+
+You requested to reset your password for the Heritage Churches of Bohol DRRM Information System.
+
+Your 6-digit password reset code is:
+
+{otp}
+
+This code will expire in 10 minutes.
+
+If you did not request this, you may ignore this email.
+
+Thank you,
+Heritage Churches of Bohol DRRM Information System
 """
     mail.send(msg)
 # ─── Upload Config ────────────────────────────────────────────────────────────
@@ -180,6 +202,18 @@ def is_admin_role(role_name=None):
 
 def is_super_admin():
     return session.get('role_name') == 'Super Admin'
+    
+def log_audit(user_id, action_type, affected_table=None, record_id=None, description=None):
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO audit_logs (user_id, action_type, affected_table, record_id, description)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, action_type, affected_table, record_id, description))
+        mysql.connection.commit()
+        cur.close()
+    except Exception as e:
+        print("AUDIT LOG ERROR:", e)
 
 
 def is_church_authorized_personnel():
@@ -256,6 +290,28 @@ def admin_required(f):
 
         return f(*args, **kwargs)
     return wrapped_view
+
+def delete_cloudinary_by_url(image_url):
+    if not image_url:
+        return
+
+    try:
+        marker = '/upload/'
+        if marker not in image_url:
+            return
+
+        public_part = image_url.split(marker, 1)[1]
+
+        parts = public_part.split('/')
+        if parts and parts[0].startswith('v') and parts[0][1:].isdigit():
+            parts = parts[1:]
+
+        public_id_with_ext = '/'.join(parts)
+        public_id = os.path.splitext(public_id_with_ext)[0]
+
+        cloudinary.uploader.destroy(public_id, resource_type='image')
+    except Exception as e:
+        print("CLOUDINARY DELETE ERROR:", e)
 
 
 # ─── Login ────────────────────────────────────────────────────────────────────
@@ -581,6 +637,133 @@ def verify_email():
             flash('Unable to verify email right now.', 'danger')
 
     return render_template('public_auth.html', auth_mode='verify', email=email)
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+
+        if not email:
+            flash('Please enter your email address.', 'danger')
+            return render_template('forgot_password.html', step='request')
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT user_id, email_verified
+                FROM users
+                WHERE email = %s
+            """, (email,))
+            user = cur.fetchone()
+
+            if not user:
+                cur.close()
+                flash('No account was found for that email address.', 'danger')
+                return render_template('forgot_password.html', step='request')
+
+            if not user.get('email_verified'):
+                cur.close()
+                flash('That account is not yet verified. Please verify your email first.', 'warning')
+                return render_template('forgot_password.html', step='request')
+
+            otp = generate_otp()
+            expiry = datetime.now() + timedelta(minutes=10)
+
+            cur.execute("""
+                UPDATE users
+                SET verification_code = %s,
+                    verification_expiry = %s
+                WHERE email = %s
+            """, (otp, expiry, email))
+            mysql.connection.commit()
+            cur.close()
+
+            send_password_reset_email(email, otp)
+            session['pending_reset_email'] = email
+
+            flash('A password reset code has been sent to your email.', 'success')
+            return redirect(url_for('reset_password'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            print('FORGOT PASSWORD ERROR:', e)
+            flash('Unable to process password reset right now.', 'danger')
+
+    return render_template('forgot_password.html', step='request')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    email = session.get('pending_reset_email')
+
+    if not email:
+        flash('No password reset request was found. Please try again.', 'warning')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        otp = request.form.get('otp', '').strip()
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if not otp or not password or not confirm_password:
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('forgot_password.html', step='reset', email=email)
+
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
+            return render_template('forgot_password.html', step='reset', email=email)
+
+        if password != confirm_password:
+            flash('Password and Confirm Password do not match.', 'danger')
+            return render_template('forgot_password.html', step='reset', email=email)
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT user_id, verification_code, verification_expiry
+                FROM users
+                WHERE email = %s
+            """, (email,))
+            user = cur.fetchone()
+
+            if not user:
+                cur.close()
+                flash('Account not found.', 'danger')
+                return redirect(url_for('forgot_password'))
+
+            expiry = user.get('verification_expiry')
+            if expiry and datetime.now() > expiry:
+                cur.close()
+                flash('Reset code expired. Please request a new one.', 'danger')
+                return redirect(url_for('forgot_password'))
+
+            if user.get('verification_code') != otp:
+                cur.close()
+                flash('Invalid reset code.', 'danger')
+                return render_template('forgot_password.html', step='reset', email=email)
+
+            new_password_hash = generate_password_hash(password)
+
+            cur.execute("""
+                UPDATE users
+                SET password_hash = %s,
+                    verification_code = NULL,
+                    verification_expiry = NULL
+                WHERE email = %s
+            """, (new_password_hash, email))
+            mysql.connection.commit()
+            cur.close()
+
+            session.pop('pending_reset_email', None)
+
+            flash('Your password has been reset successfully. You can now log in.', 'success')
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            print('RESET PASSWORD ERROR:', e)
+            flash('Unable to reset password right now.', 'danger')
+
+    return render_template('forgot_password.html', step='reset', email=email)
 
 #-------------send otp again --------------------------
 @app.route('/resend-verification-code', methods=['POST'])
@@ -1584,12 +1767,17 @@ def add_church():
     longitude = request.form.get('longitude') or None
     date_built = request.form.get('date_built') or None
     monitoring_status = request.form.get('monitoring_status', 'Active')
+    role_name = session.get('role_name')
 
     if not church_name or not barangay or not monitoring_status:
         flash('Church name, barangay, and monitoring status are required.', 'danger')
         return redirect(url_for('dashboard'))
 
-    if session.get('role_name') == 'Super Admin':
+    if role_name == 'Church Authorized Personnel':
+        flash('Church Authorized Personnel cannot add new churches.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if role_name == 'Super Admin':
         municipality_id = form_municipality_id
         if not municipality_id:
             flash('Municipality is required.', 'danger')
@@ -1637,7 +1825,6 @@ def add_church():
         flash(f'Error adding church: {str(e)}', 'danger')
 
     return redirect(url_for('dashboard'))
-
 
 # ─── Edit Church ──────────────────────────────────────────────────────────────
 @app.route('/admin/edit-church/<int:church_id>', methods=['POST'])
@@ -1891,22 +2078,10 @@ def delete_church(church_id):
         cur.close()
 
         for img in report_images:
-            if img.get('image_path'):
-                absolute_path = os.path.join(app.static_folder, img['image_path'].replace('/', os.sep))
-                if os.path.exists(absolute_path):
-                    try:
-                        os.remove(absolute_path)
-                    except Exception as file_err:
-                        print("DELETE REPORT IMAGE FILE ERROR:", file_err)
+            delete_cloudinary_by_url(img.get('image_path'))
 
         for img in church_images:
-            if img.get('image_path'):
-                absolute_path = os.path.join(app.static_folder, img['image_path'].replace('/', os.sep))
-                if os.path.exists(absolute_path):
-                    try:
-                        os.remove(absolute_path)
-                    except Exception as file_err:
-                        print("DELETE CHURCH IMAGE FILE ERROR:", file_err)
+            delete_cloudinary_by_url(img.get('image_path'))
 
         log_audit(
             session.get('user_id'),
@@ -1923,8 +2098,6 @@ def delete_church(church_id):
         flash(f'Error deleting church: {str(e)}', 'danger')
 
     return redirect(url_for('dashboard'))
-
-
 # ─── Submit Disaster Report ───────────────────────────────────────────────────
 @app.route('/admin/submit-report', methods=['POST'])
 @admin_required
@@ -2325,17 +2498,15 @@ def delete_church_image(image_id, church_id):
             return redirect_after_church_action(church_id, redirect_to)
 
         image_path = image['image_path']
-        cur.execute("DELETE FROM church_images WHERE image_id = %s", (image_id,))
+
+        cur.execute("""
+            DELETE FROM church_images
+            WHERE image_id = %s AND church_id = %s
+        """, (image_id, church_id))
         mysql.connection.commit()
         cur.close()
 
-        if image_path:
-            absolute_path = os.path.join(app.static_folder, image_path.replace('/', os.sep))
-            if os.path.exists(absolute_path):
-                try:
-                    os.remove(absolute_path)
-                except Exception as file_err:
-                    print("FILE DELETE ERROR:", file_err)
+        delete_cloudinary_by_url(image_path)
 
         log_audit(
             session.get('user_id'),
@@ -2563,13 +2734,7 @@ def delete_report_image(report_image_id, report_id, church_id):
         mysql.connection.commit()
         cur.close()
 
-        if image_path:
-            absolute_path = os.path.join(app.static_folder, image_path.replace('/', os.sep))
-            if os.path.exists(absolute_path):
-                try:
-                    os.remove(absolute_path)
-                except Exception as file_err:
-                    print("DELETE REPORT IMAGE FILE ERROR:", file_err)
+        delete_cloudinary_by_url(image_path)
 
         log_audit(
             session.get('user_id'),
@@ -2663,19 +2828,16 @@ def delete_disaster_report(report_id, church_id):
         report_images = cur.fetchall()
 
         cur.execute("DELETE FROM report_images WHERE report_id = %s", (report_id,))
-        cur.execute("DELETE FROM disaster_reports WHERE report_id = %s AND church_id = %s", (report_id, church_id))
+        cur.execute("""
+            DELETE FROM disaster_reports
+            WHERE report_id = %s AND church_id = %s
+        """, (report_id, church_id))
 
         mysql.connection.commit()
         cur.close()
 
         for img in report_images:
-            if img.get('image_path'):
-                absolute_path = os.path.join(app.static_folder, img['image_path'].replace('/', os.sep))
-                if os.path.exists(absolute_path):
-                    try:
-                        os.remove(absolute_path)
-                    except Exception as file_err:
-                        print("REPORT IMAGE DELETE ERROR:", file_err)
+            delete_cloudinary_by_url(img.get('image_path'))
 
         log_audit(
             session.get('user_id'),
@@ -2709,47 +2871,47 @@ def add_assessment():
         flash('Church, hazard type, and risk level are required.', 'danger')
         return redirect(url_for('dashboard'))
 
-    cur = mysql.connection.cursor()
+    if not can_manage_church(church_id):
+        flash('You do not have permission to assess this church.', 'danger')
+        return redirect_after_church_action(church_id, redirect_to)
 
-    if session.get('role_name') != 'Super Admin':
-        cur.execute("SELECT municipality_id FROM churches WHERE church_id = %s", (church_id,))
-        church = cur.fetchone()
-        if not church or church['municipality_id'] != session.get('municipality_id'):
-            flash('You do not have permission to assess this church.', 'danger')
-            cur.close()
-            if church_id:
-                return redirect(url_for('church_detail', church_id=church_id))
-            return redirect(url_for('dashboard'))
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            INSERT INTO church_hazard_assessments
+                (church_id, hazard_type_id, risk_level,
+                 assessment_date, assessment_remarks, assessed_by)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            church_id,
+            hazard_type_id,
+            risk_level,
+            assessment_date,
+            assessment_remarks,
+            session.get('user_id')
+        ))
+        mysql.connection.commit()
+        new_assessment_id = cur.lastrowid
+        cur.close()
 
-    cur.execute("""
-        INSERT INTO church_hazard_assessments
-            (church_id, hazard_type_id, risk_level,
-             assessment_date, assessment_remarks, assessed_by)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (
-        church_id, hazard_type_id, risk_level,
-        assessment_date, assessment_remarks,
-        session.get('user_id')
-    ))
-    mysql.connection.commit()
-    new_assessment_id = cur.lastrowid
-    cur.close()
+        log_audit(
+            session.get('user_id'),
+            'INSERT',
+            'church_hazard_assessments',
+            new_assessment_id,
+            f'Added hazard assessment for church ID {church_id}.'
+        )
 
-    log_audit(
-        session.get('user_id'),
-        'INSERT',
-        'church_hazard_assessments',
-        new_assessment_id,
-        f'Added hazard assessment for church ID {church_id}.'
-    )
+        flash('Hazard assessment added successfully!', 'success')
 
-    flash('Hazard assessment added successfully!', 'success')
+    except Exception as e:
+        print("ADD ASSESSMENT ERROR:", e)
+        flash(f'Error adding hazard assessment: {str(e)}', 'danger')
 
     if redirect_to == 'church_detail' and church_id:
         return redirect(url_for('church_detail', church_id=church_id))
 
     return redirect(url_for('dashboard'))
-
 
 # ─── Update Hazard Assessment ─────────────────────────────────────────────────
 @app.route('/admin/update-assessment/<int:assessment_id>/<int:church_id>', methods=['POST'])
@@ -2887,7 +3049,7 @@ def admin_users():
 def add_user():
     full_name = request.form.get('full_name', '').strip()
     username = request.form.get('username', '').strip()
-    email = request.form.get('email', '').strip()
+    email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '').strip()
     role_id = request.form.get('role_id')
     municipality_id = request.form.get('municipality_id') or None
@@ -2895,6 +3057,10 @@ def add_user():
 
     if not full_name or not username or not email or not password or not role_id:
         flash('Full name, username, email, password, and role are required.', 'danger')
+        return redirect(url_for('admin_users'))
+
+    if len(password) < 8:
+        flash('Password must be at least 8 characters long.', 'danger')
         return redirect(url_for('admin_users'))
 
     try:
@@ -2914,33 +3080,45 @@ def add_user():
 
         cur.execute("SELECT role_name FROM roles WHERE role_id = %s", (role_id,))
         selected_role = cur.fetchone()
-        
+
         if not selected_role:
             cur.close()
             flash('Selected role was not found.', 'danger')
             return redirect(url_for('admin_users'))
-        
+
         selected_role_name = selected_role['role_name']
-        
+
         if selected_role_name == 'Church Authorized Personnel':
             if not assigned_church_id:
                 cur.close()
                 flash('Assigned church is required for Church Authorized Personnel.', 'danger')
                 return redirect(url_for('admin_users'))
-        
+
             cur.execute("""
                 SELECT municipality_id
                 FROM churches
                 WHERE church_id = %s
             """, (assigned_church_id,))
             assigned_church = cur.fetchone()
-        
+
             if not assigned_church:
                 cur.close()
                 flash('Assigned church was not found.', 'danger')
                 return redirect(url_for('admin_users'))
-        
+
             municipality_id = assigned_church['municipality_id']
+
+        elif selected_role_name == 'Municipal Admin':
+            assigned_church_id = None
+            if not municipality_id:
+                cur.close()
+                flash('Municipality is required for Municipal Admin.', 'danger')
+                return redirect(url_for('admin_users'))
+
+        elif selected_role_name == 'Super Admin':
+            municipality_id = None
+            assigned_church_id = None
+
         else:
             assigned_church_id = None
 
@@ -2949,8 +3127,9 @@ def add_user():
         cur.execute("""
             INSERT INTO users
                 (full_name, username, email, password_hash,
-                 role_id, municipality_id, assigned_church_id, account_status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'active')
+                 role_id, municipality_id, assigned_church_id,
+                 account_status, email_verified, verified_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'active', 1, NOW())
         """, (
             full_name,
             username,
@@ -2980,7 +3159,6 @@ def add_user():
 
     return redirect(url_for('admin_users'))
 
-
 # ─── Update User ──────────────────────────────────────────────────────────────
 @app.route('/admin/users/update/<int:user_id>', methods=['POST'])
 @login_required
@@ -2992,7 +3170,7 @@ def update_user(user_id):
 
     full_name = request.form.get('full_name', '').strip()
     username = request.form.get('username', '').strip()
-    email = request.form.get('email', '').strip()
+    email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '').strip()
     role_id = request.form.get('role_id')
     municipality_id = request.form.get('municipality_id') or None
@@ -3029,37 +3207,54 @@ def update_user(user_id):
 
         cur.execute("SELECT role_name FROM roles WHERE role_id = %s", (role_id,))
         selected_role = cur.fetchone()
-        
+
         if not selected_role:
             cur.close()
             flash('Selected role was not found.', 'danger')
             return redirect(url_for('admin_users'))
-        
+
         selected_role_name = selected_role['role_name']
-        
+
         if selected_role_name == 'Church Authorized Personnel':
             if not assigned_church_id:
                 cur.close()
                 flash('Assigned church is required for Church Authorized Personnel.', 'danger')
                 return redirect(url_for('admin_users'))
-        
+
             cur.execute("""
                 SELECT municipality_id
                 FROM churches
                 WHERE church_id = %s
             """, (assigned_church_id,))
             assigned_church = cur.fetchone()
-        
+
             if not assigned_church:
                 cur.close()
                 flash('Assigned church was not found.', 'danger')
                 return redirect(url_for('admin_users'))
-        
+
             municipality_id = assigned_church['municipality_id']
+
+        elif selected_role_name == 'Municipal Admin':
+            assigned_church_id = None
+            if not municipality_id:
+                cur.close()
+                flash('Municipality is required for Municipal Admin.', 'danger')
+                return redirect(url_for('admin_users'))
+
+        elif selected_role_name == 'Super Admin':
+            municipality_id = None
+            assigned_church_id = None
+
         else:
             assigned_church_id = None
 
         if password:
+            if len(password) < 8:
+                cur.close()
+                flash('Password must be at least 8 characters long.', 'danger')
+                return redirect(url_for('admin_users'))
+
             hashed_password = generate_password_hash(password)
 
             cur.execute("""
@@ -3125,7 +3320,6 @@ def update_user(user_id):
 
     return redirect(url_for('admin_users'))
 
-
 # ─── Toggle User Status ───────────────────────────────────────────────────────
 @app.route('/admin/users/toggle/<int:user_id>', methods=['POST'])
 @login_required
@@ -3184,30 +3378,26 @@ def delete_user(user_id):
 
         username = user['username']
 
-        # Delete dependent audit logs first to avoid foreign key constraint errors
         cur.execute("DELETE FROM audit_logs WHERE user_id = %s", (user_id,))
-
-        # Now delete the user
         cur.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
         mysql.connection.commit()
         cur.close()
 
-        #log_audit(
-            #session.get('user_id'),
-            #'DELETE',
-            #'users',
-            #user_id,
-            #f'Deleted user \"{username}\".'
-        #)
+        log_audit(
+            session.get('user_id'),
+            'DELETE',
+            'users',
+            user_id,
+            f'Deleted user "{username}".'
+        )
 
-        flash(f'User \"{username}\" has been deleted.', 'info')
+        flash(f'User "{username}" has been deleted.', 'info')
 
     except Exception as e:
         print("DELETE USER ERROR:", e)
         flash(f'Error deleting user: {str(e)}', 'danger')
 
     return redirect(url_for('admin_users'))
-
 
 # ─── View All Reports ─────────────────────────────────────────────────────────
 @app.route('/admin/reports')
