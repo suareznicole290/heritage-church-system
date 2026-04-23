@@ -3192,13 +3192,13 @@ def delete_user(user_id):
         mysql.connection.commit()
         cur.close()
 
-        log_audit(
-            session.get('user_id'),
-            'DELETE',
-            'users',
-            user_id,
-            f'Deleted user \"{username}\".'
-        )
+        #log_audit(
+            #session.get('user_id'),
+            #'DELETE',
+            #'users',
+            #user_id,
+            #f'Deleted user \"{username}\".'
+        #)
 
         flash(f'User \"{username}\" has been deleted.', 'info')
 
