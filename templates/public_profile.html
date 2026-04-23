@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">My Profile</h2>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="mb-3">Profile Information</h4>
+
+          <form method="POST" action="{{ url_for('public_update_profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <input type="text" class="form-control" value="{{ user.role_name }}" readonly>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h4 class="mb-3">Change Password</h4>
+
+          <form method="POST" action="{{ url_for('public_change_password') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label class="form-label">Current Password</label>
+              <input type="password" name="current_password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">New Password</label>
+              <input type="password" name="new_password" class="form-control" minlength="8" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" name="confirm_password" class="form-control" minlength="8" required>
+            </div>
+
+            <button type="submit" class="btn btn-warning">Change Password</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-danger">
+        <div class="card-body">
+          <h4 class="mb-3 text-danger">Delete Account</h4>
+          <p class="text-muted">
+            This will deactivate your account. Type <strong>DELETE</strong> and enter your password to confirm.
+          </p>
+
+          <form method="POST" action="{{ url_for('public_delete_account') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+              <label class="form-label">Type DELETE</label>
+              <input type="text" name="confirm_text" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" name="delete_password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-danger">Delete My Account</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
