@@ -291,6 +291,34 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapped_view
 
+def public_user_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or session.get('role_name') != 'Public User':
+            flash('Please log in as a public user first.', 'warning')
+            return redirect(url_for('public_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def send_admin_reset_email(email, otp):
+    subject = "Admin Password Reset Code"
+    body = f"""
+Hello,
+
+We received a request to reset your admin account password.
+
+Your password reset code is: {otp}
+
+This code will expire in 10 minutes.
+
+If you did not request this, you may ignore this email.
+
+- Heritage Churches of Bohol DRRM Information System
+"""
+    msg = Message(subject=subject, recipients=[email], body=body)
+    mail.send(msg)
+
 def delete_cloudinary_by_url(image_url):
     if not image_url:
         return
@@ -333,8 +361,11 @@ def login():
             SELECT u.*, r.role_name
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
-            WHERE u.username = %s AND u.email = %s
+            WHERE u.username = %s
+              AND u.email = %s
+              AND u.is_deleted = 0
         """, (username, email))
+                
         user = cur.fetchone()
         cur.close()
 
@@ -385,12 +416,16 @@ def public_login():
 
         try:
             cur = mysql.connection.cursor()
+
             cur.execute("""
                 SELECT u.*, r.role_name
                 FROM users u
                 JOIN roles r ON u.role_id = r.role_id
-                WHERE u.email = %s AND r.role_name = %s
+                WHERE u.email = %s
+                  AND r.role_name = %s
+                  AND u.is_deleted = 0
             """, (email, 'Public User'))
+                       
             user = cur.fetchone()
             cur.close()
 
@@ -537,6 +572,194 @@ def public_logout():
         flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+
+@app.route('/public/profile')
+@public_user_required
+def public_profile():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT u.user_id, u.full_name, u.username, u.email, u.account_status,
+                   r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            WHERE u.user_id = %s
+              AND u.is_deleted = 0
+            LIMIT 1
+        """, (session['user_id'],))
+        user = cur.fetchone()
+        cur.close()
+
+        if not user:
+            session.clear()
+            flash('Account not found.', 'danger')
+            return redirect(url_for('login'))
+
+        return render_template('public_profile.html', user=user)
+
+    except Exception as e:
+        flash(f'Error loading profile: {str(e)}', 'danger')
+        return redirect(url_for('index'))
+
+
+@app.route('/public/update-profile', methods=['POST'])
+@public_user_required
+def public_update_profile():
+    full_name = request.form.get('full_name', '').strip()
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+
+    if not full_name or not username or not email:
+        flash('All profile fields are required.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    try:
+        cur = mysql.connection.cursor()
+
+        cur.execute("""
+            SELECT user_id
+            FROM users
+            WHERE (username = %s OR email = %s)
+              AND user_id != %s
+              AND is_deleted = 0
+            LIMIT 1
+        """, (username, email, session['user_id']))
+        existing = cur.fetchone()
+
+        if existing:
+            cur.close()
+            flash('Username or email is already in use.', 'danger')
+            return redirect(url_for('public_profile'))
+
+        cur.execute("""
+            UPDATE users
+            SET full_name = %s,
+                username = %s,
+                email = %s
+            WHERE user_id = %s
+              AND is_deleted = 0
+        """, (full_name, username, email, session['user_id']))
+        mysql.connection.commit()
+        cur.close()
+
+        session['username'] = username
+
+        flash('Profile updated successfully.', 'success')
+        return redirect(url_for('public_profile'))
+
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error updating profile: {str(e)}', 'danger')
+        return redirect(url_for('public_profile'))
+
+
+@app.route('/public/change-password', methods=['POST'])
+@public_user_required
+def public_change_password():
+    current_password = request.form.get('current_password', '').strip()
+    new_password = request.form.get('new_password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+
+    if not current_password or not new_password or not confirm_password:
+        flash('Please complete all password fields.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    if len(new_password) < 8:
+        flash('New password must be at least 8 characters long.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    if new_password != confirm_password:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT password_hash
+            FROM users
+            WHERE user_id = %s
+              AND is_deleted = 0
+            LIMIT 1
+        """, (session['user_id'],))
+        user = cur.fetchone()
+
+        if not user or not check_password_hash(user['password_hash'], current_password):
+            cur.close()
+            flash('Current password is incorrect.', 'danger')
+            return redirect(url_for('public_profile'))
+
+        new_password_hash = generate_password_hash(new_password)
+
+        cur.execute("""
+            UPDATE users
+            SET password_hash = %s
+            WHERE user_id = %s
+              AND is_deleted = 0
+        """, (new_password_hash, session['user_id']))
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Password changed successfully.', 'success')
+        return redirect(url_for('public_profile'))
+
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error changing password: {str(e)}', 'danger')
+        return redirect(url_for('public_profile'))
+
+
+@app.route('/public/delete-account', methods=['POST'])
+@public_user_required
+def public_delete_account():
+    password = request.form.get('delete_password', '').strip()
+    confirm_text = request.form.get('confirm_text', '').strip()
+
+    if not password:
+        flash('Please enter your password to delete your account.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    if confirm_text != 'DELETE':
+        flash('Please type DELETE to confirm account deletion.', 'danger')
+        return redirect(url_for('public_profile'))
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT password_hash
+            FROM users
+            WHERE user_id = %s
+              AND is_deleted = 0
+            LIMIT 1
+        """, (session['user_id'],))
+        user = cur.fetchone()
+
+        if not user or not check_password_hash(user['password_hash'], password):
+            cur.close()
+            flash('Incorrect password.', 'danger')
+            return redirect(url_for('public_profile'))
+
+        cur.execute("""
+            UPDATE users
+            SET is_deleted = 1,
+                deleted_at = %s,
+                account_status = 'inactive',
+                reset_code = NULL,
+                reset_expiry = NULL,
+                verification_code = NULL,
+                verification_expiry = NULL
+            WHERE user_id = %s
+        """, (datetime.now(), session['user_id']))
+        mysql.connection.commit()
+        cur.close()
+
+        session.clear()
+        flash('Your account has been deleted successfully.', 'success')
+        return redirect(url_for('index'))
+
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error deleting account: {str(e)}', 'danger')
+        return redirect(url_for('public_profile'))
 #---------------verify-email-------------
 
 @app.route('/verify-email', methods=['GET', 'POST'])
@@ -765,6 +988,168 @@ def reset_password():
 
     return render_template('forgot_password.html', step='reset', email=email)
 
+
+@app.route('/admin/forgot-password', methods=['GET', 'POST'])
+def admin_forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+
+        if not email:
+            flash('Please enter your email address.', 'danger')
+            return redirect(url_for('admin_forgot_password'))
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT u.user_id, u.email, r.role_name
+                FROM users u
+                JOIN roles r ON u.role_id = r.role_id
+                WHERE u.email = %s
+                  AND r.role_name IN ('Super Admin', 'Municipal Admin')
+                  AND u.is_deleted = 0
+                LIMIT 1
+            """, (email,))
+            user = cur.fetchone()
+
+            if user:
+                otp = str(uuid.uuid4().int)[:6]
+                expiry = datetime.now() + timedelta(minutes=10)
+
+                cur.execute("""
+                    UPDATE users
+                    SET reset_code = %s,
+                        reset_expiry = %s
+                    WHERE user_id = %s
+                """, (otp, expiry, user['user_id']))
+                mysql.connection.commit()
+
+                send_admin_reset_email(email, otp)
+                session['pending_admin_reset_email'] = email
+                cur.close()
+
+                flash('If the account exists, a reset code has been sent to the email.', 'info')
+                return redirect(url_for('admin_verify_reset_code'))
+
+            cur.close()
+            flash('If the account exists, a reset code has been sent to the email.', 'info')
+            return redirect(url_for('admin_forgot_password'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error processing forgot password request: {str(e)}', 'danger')
+            return redirect(url_for('admin_forgot_password'))
+
+    return render_template('admin_forgot_password.html')
+
+@app.route('/admin/verify-reset-code', methods=['GET', 'POST'])
+def admin_verify_reset_code():
+    email = session.get('pending_admin_reset_email')
+
+    if not email:
+        flash('Please start the password reset process first.', 'warning')
+        return redirect(url_for('admin_forgot_password'))
+
+    if request.method == 'POST':
+        code = request.form.get('reset_code', '').strip()
+
+        if not code:
+            flash('Please enter the reset code.', 'danger')
+            return redirect(url_for('admin_verify_reset_code'))
+
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                SELECT u.user_id, u.reset_code, u.reset_expiry
+                FROM users u
+                JOIN roles r ON u.role_id = r.role_id
+                WHERE u.email = %s
+                  AND r.role_name IN ('Super Admin', 'Municipal Admin')
+                  AND u.is_deleted = 0
+                LIMIT 1
+            """, (email,))
+            user = cur.fetchone()
+            cur.close()
+
+            if not user:
+                flash('Invalid reset session. Please try again.', 'danger')
+                session.pop('pending_admin_reset_email', None)
+                return redirect(url_for('admin_forgot_password'))
+
+            if not user['reset_code'] or not user['reset_expiry']:
+                flash('No valid reset code found. Please request a new one.', 'warning')
+                return redirect(url_for('admin_forgot_password'))
+
+            if str(user['reset_code']).strip() != code:
+                flash('Invalid reset code.', 'danger')
+                return redirect(url_for('admin_verify_reset_code'))
+
+            if datetime.now() > user['reset_expiry']:
+                flash('Reset code has expired. Please request a new one.', 'warning')
+                return redirect(url_for('admin_forgot_password'))
+
+            session['admin_reset_verified'] = True
+            return redirect(url_for('admin_reset_password'))
+
+        except Exception as e:
+            flash(f'Error verifying reset code: {str(e)}', 'danger')
+            return redirect(url_for('admin_verify_reset_code'))
+
+    return render_template('admin_verify_reset.html')
+
+
+@app.route('/admin/reset-password', methods=['GET', 'POST'])
+def admin_reset_password():
+    email = session.get('pending_admin_reset_email')
+
+    if not email or not session.get('admin_reset_verified'):
+        flash('Please complete reset verification first.', 'warning')
+        return redirect(url_for('admin_forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if not password or not confirm_password:
+            flash('Please complete all fields.', 'danger')
+            return redirect(url_for('admin_reset_password'))
+
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.', 'danger')
+            return redirect(url_for('admin_reset_password'))
+
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('admin_reset_password'))
+
+        try:
+            password_hash = generate_password_hash(password)
+
+            cur = mysql.connection.cursor()
+            cur.execute("""
+                UPDATE users u
+                JOIN roles r ON u.role_id = r.role_id
+                SET u.password_hash = %s,
+                    u.reset_code = NULL,
+                    u.reset_expiry = NULL
+                WHERE u.email = %s
+                  AND r.role_name IN ('Super Admin', 'Municipal Admin')
+                  AND u.is_deleted = 0
+            """, (password_hash, email))
+            mysql.connection.commit()
+            cur.close()
+
+            session.pop('pending_admin_reset_email', None)
+            session.pop('admin_reset_verified', None)
+
+            flash('Password reset successful. You may now log in.', 'success')
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'Error resetting password: {str(e)}', 'danger')
+            return redirect(url_for('admin_reset_password'))
+
+    return render_template('admin_reset_password.html')
 #-------------send otp again --------------------------
 @app.route('/resend-verification-code', methods=['POST'])
 def resend_verification_code():
@@ -3159,6 +3544,141 @@ def add_user():
 
     return redirect(url_for('admin_users'))
 
+
+@app.route('/admin/profile')
+@admin_required
+def admin_profile():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT u.user_id, u.full_name, u.username, u.email, u.account_status,
+                   u.municipality_id, r.role_name, m.municipality_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            LEFT JOIN municipalities m ON u.municipality_id = m.municipality_id
+            WHERE u.user_id = %s
+              AND u.is_deleted = 0
+            LIMIT 1
+        """, (session['user_id'],))
+        user = cur.fetchone()
+        cur.close()
+
+        if not user:
+            session.clear()
+            flash('Account not found.', 'danger')
+            return redirect(url_for('login'))
+
+        return render_template('admin_profile.html', user=user)
+
+    except Exception as e:
+        flash(f'Error loading admin profile: {str(e)}', 'danger')
+        return redirect(url_for('dashboard'))
+
+
+@app.route('/admin/update-profile', methods=['POST'])
+@admin_required
+def admin_update_profile():
+    full_name = request.form.get('full_name', '').strip()
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+
+    if not full_name or not username or not email:
+        flash('All profile fields are required.', 'danger')
+        return redirect(url_for('admin_profile'))
+
+    try:
+        cur = mysql.connection.cursor()
+
+        cur.execute("""
+            SELECT user_id
+            FROM users
+            WHERE (username = %s OR email = %s)
+              AND user_id != %s
+              AND is_deleted = 0
+            LIMIT 1
+        """, (username, email, session['user_id']))
+        existing = cur.fetchone()
+
+        if existing:
+            cur.close()
+            flash('Username or email is already in use.', 'danger')
+            return redirect(url_for('admin_profile'))
+
+        cur.execute("""
+            UPDATE users
+            SET full_name = %s,
+                username = %s,
+                email = %s
+            WHERE user_id = %s
+              AND is_deleted = 0
+        """, (full_name, username, email, session['user_id']))
+        mysql.connection.commit()
+        cur.close()
+
+        session['username'] = username
+
+        flash('Admin profile updated successfully.', 'success')
+        return redirect(url_for('admin_profile'))
+
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error updating admin profile: {str(e)}', 'danger')
+        return redirect(url_for('admin_profile'))
+
+
+@app.route('/admin/change-password', methods=['POST'])
+@admin_required
+def admin_change_password():
+    current_password = request.form.get('current_password', '').strip()
+    new_password = request.form.get('new_password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+
+    if not current_password or not new_password or not confirm_password:
+        flash('Please complete all password fields.', 'danger')
+        return redirect(url_for('admin_profile'))
+
+    if len(new_password) < 8:
+        flash('New password must be at least 8 characters long.', 'danger')
+        return redirect(url_for('admin_profile'))
+
+    if new_password != confirm_password:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('admin_profile'))
+
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT password_hash
+            FROM users
+            WHERE user_id = %s
+              AND is_deleted = 0
+            LIMIT 1
+        """, (session['user_id'],))
+        user = cur.fetchone()
+
+        if not user or not check_password_hash(user['password_hash'], current_password):
+            cur.close()
+            flash('Current password is incorrect.', 'danger')
+            return redirect(url_for('admin_profile'))
+
+        new_password_hash = generate_password_hash(new_password)
+
+        cur.execute("""
+            UPDATE users
+            SET password_hash = %s
+            WHERE user_id = %s
+              AND is_deleted = 0
+        """, (new_password_hash, session['user_id']))
+        mysql.connection.commit()
+        cur.close()
+
+        flash('Admin password changed successfully.', 'success')
+        return redirect(url_for('admin_profile'))
+
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error changing admin password: {str(e)}', 'danger')
+        return redirect(url_for('admin_profile'))
 # ─── Update User ──────────────────────────────────────────────────────────────
 @app.route('/admin/users/update/<int:user_id>', methods=['POST'])
 @login_required
