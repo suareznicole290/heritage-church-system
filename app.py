@@ -372,18 +372,6 @@ def public_login():
 # ─── Logout ───────────────────────────────────────────────────────────────────
 @app.route('/logout')
 def logout():
-    user_id = session.get('user_id')
-    full_name = session.get('full_name', 'Unknown User')
-
-    if user_id:
-        log_audit(
-            user_id,
-            'LOGOUT',
-            'users',
-            user_id,
-            f"{full_name} logged out of the system."
-        )
-
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
