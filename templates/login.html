@@ -237,12 +237,12 @@ body {
 
       <div class="form-group">
         <label class="form-label">Username</label>
-        <input class="form-input" type="text" name="username" required>
+        <input class="form-input" type="text" name="username" value="{{ request.form.get('username', '') }}" required>
       </div>
 
       <div class="form-group">
         <label class="form-label">Email Address</label>
-        <input class="form-input" type="email" name="email" required>
+        <input class="form-input" type="email" name="email" value="{{ request.form.get('email', '') }}" required>
       </div>
 
       <div class="form-group">
