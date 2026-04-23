@@ -440,21 +440,6 @@
         </p>
       </div>
 
-      <div class="auth-tabs">
-        <a href="{{ url_for('signup', next=next_url) }}"
-           class="auth-tab {% if auth_mode == 'signup' %}active{% endif %}">
-          Create Account
-        </a>
-        <a href="{{ url_for('public_login', next=next_url) }}"
-           class="auth-tab {% if auth_mode == 'login' %}active{% endif %}">
-          Log In
-        </a>
-        <a href="{{ url_for('verify_email') }}"
-           class="auth-tab {% if auth_mode == 'verify' %}active{% endif %}">
-          Verify Email
-        </a>
-      </div>
-
       {% if auth_mode == 'signup' %}
       <div class="auth-card">
         <h3 class="auth-card-title">Create Account</h3>
