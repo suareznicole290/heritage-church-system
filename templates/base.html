@@ -789,28 +789,30 @@ a {
       </a>
 
       <nav class="admin-side-nav">
-        <a href="{{ url_for('dashboard') }}" class="{% block nav_dashboard %}{% endblock %}">
-          {{ icons.dashboard(16) }}<span>Dashboard</span>
-        </a>
-        <a href="{{ url_for('hazard_map') }}" class="{% block nav_hazard_map %}{% endblock %}">
-          {{ icons.map(16) }}<span>Hazard Map</span>
-        </a>
-        <a href="{{ url_for('view_reports') }}" class="{% block nav_reports %}{% endblock %}">
-          {{ icons.reports(16) }}<span>Reports</span>
-        </a>
-        <a href="{{ url_for('analytics') }}" class="{% block nav_analytics %}{% endblock %}">
-          {{ icons.analytics(16) }}<span>Analytics</span>
-        </a>
-        {% if role_name == 'Super Admin' %}
-        <a href="{{ url_for('admin_users') }}" class="{% block nav_users %}{% endblock %}">
-          {{ icons.users(16) }}<span>Users</span>
-        </a>
-        <a href="{{ url_for('audit_logs') }}" class="{% block nav_logs %}{% endblock %}">
-          {{ icons.logs(16) }}<span>Logs</span>
-        </a>
-        {% endif %}
-      </nav>
-
+  <a href="{{ url_for('dashboard') }}" class="{% block nav_dashboard %}{% endblock %}">
+    {{ icons.dashboard(16) }}<span>Dashboard</span>
+  </a>
+  <a href="{{ url_for('admin_profile') }}">
+    {{ icons.users(16) }}<span>Profile</span>
+  </a>
+  <a href="{{ url_for('hazard_map') }}" class="{% block nav_hazard_map %}{% endblock %}">
+    {{ icons.map(16) }}<span>Hazard Map</span>
+  </a>
+  <a href="{{ url_for('view_reports') }}" class="{% block nav_reports %}{% endblock %}">
+    {{ icons.reports(16) }}<span>Reports</span>
+  </a>
+  <a href="{{ url_for('analytics') }}" class="{% block nav_analytics %}{% endblock %}">
+    {{ icons.analytics(16) }}<span>Analytics</span>
+  </a>
+  {% if role_name == 'Super Admin' %}
+  <a href="{{ url_for('admin_users') }}" class="{% block nav_users %}{% endblock %}">
+    {{ icons.users(16) }}<span>Users</span>
+  </a>
+  <a href="{{ url_for('audit_logs') }}" class="{% block nav_logs %}{% endblock %}">
+    {{ icons.logs(16) }}<span>Logs</span>
+  </a>
+  {% endif %}
+</nav>
       <div class="admin-side-footer">
         <div class="admin-user-box">
           <div class="user-chip">
@@ -894,79 +896,42 @@ a {
               {{ icons.about(16) }}<span>About</span>
             </a>
           </nav>
-
           {% if role_name == 'Public User' and session.get('user_id') %}
-            <div class="public-user-actions">
-              <div class="public-user-chip">
-                <div class="user-chip">
-                  <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
-                  <div class="user-info">
-                    <span class="user-name">{{ session.get('full_name', 'User') }}</span>
-                    <span class="user-role">Public User</span>
-                  </div>
+          <div class="public-user-actions">
+            <div class="public-user-chip">
+              <div class="user-chip">
+                <div class="user-avatar">{{ session['full_name'][0] if session.get('full_name') else 'U' }}</div>
+                <div class="user-info">
+                  <span class="user-name">{{ session.get('full_name', 'User') }}</span>
+                  <span class="user-role">Public User</span>
                 </div>
               </div>
-
-              <a href="{{ url_for('public_reports', open_submit=1) }}" class="action-btn">
-                {{ icons.reports(16) }}<span>Submit Report</span>
-              </a>
-              <a href="{{ url_for('public_logout') }}" class="action-btn-outline">
-                {{ icons.logout(16) }}<span>Log Out</span>
-              </a>
             </div>
-          {% else %}
-            <div class="public-auth-actions">
-              <a href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}" class="action-btn">
-                {{ icons.login(16) }}<span>Public Sign In</span>
-              </a>
-              <a href="{{ url_for('login') }}" class="action-btn-outline">
-                {{ icons.login(16) }}<span>Admin Login</span>
-              </a>
-            </div>
-          {% endif %}
-        </div>
-
-        <button class="menu-toggle" id="publicMenuToggle" type="button" aria-label="Toggle menu">
-          <span id="publicMenuToggleIcon">{{ icons.menu(20) }}</span>
-        </button>
-      </div>
-
-      <div class="public-mobile-menu" id="publicMobileMenu">
-        <div class="public-mobile-panel">
-          <nav class="public-mobile-links">
-            <a href="{{ url_for('index') }}" class="{% block m_nav_home %}{% endblock %}">
-              {{ icons.church(16) }}<span>Home</span>
+        
+            <a href="{{ url_for('public_reports', open_submit=1) }}" class="action-btn">
+              {{ icons.reports(16) }}<span>Submit Report</span>
             </a>
-            <a href="{{ url_for('hazard_map') }}" class="{% block m_nav_public_hazard_map %}{% endblock %}">
-              {{ icons.map(16) }}<span>Hazard Map</span>
+        
+            <a href="{{ url_for('public_profile') }}" class="action-btn-outline">
+              {{ icons.users(16) }}<span>My Profile</span>
             </a>
-            <a href="{{ url_for('public_reports') }}" class="{% block m_nav_public_reports %}{% endblock %}">
-              {{ icons.reports(16) }}<span>Reports</span>
+        
+            <a href="{{ url_for('public_logout') }}" class="action-btn-outline">
+              {{ icons.logout(16) }}<span>Log Out</span>
             </a>
-            <a href="{{ url_for('about') }}" class="{% block m_nav_about %}{% endblock %}">
-              {{ icons.about(16) }}<span>About</span>
+          </div>
+        {% else %}
+          <div class="public-auth-actions">
+            <a href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}" class="action-btn">
+              {{ icons.login(16) }}<span>Public Sign In</span>
             </a>
-          </nav>
-
-          <div class="public-mobile-actions">
-            {% if role_name == 'Public User' and session.get('user_id') %}
-              <a href="{{ url_for('public_reports', open_submit=1) }}" class="action-btn">
-                {{ icons.reports(16) }}<span>Submit Report</span>
-              </a>
-              <a href="{{ url_for('public_logout') }}" class="action-btn-outline">
-                {{ icons.logout(16) }}<span>Log Out</span>
-              </a>
-            {% else %}
-              <a href="{{ url_for('public_login', next=url_for('public_reports', open_submit=1)) }}" class="action-btn">
-                {{ icons.login(16) }}<span>Public Sign In</span>
-              </a>
-              <a href="{{ url_for('login') }}" class="action-btn-outline">
-                {{ icons.login(16) }}<span>Admin Login</span>
-              </a>
-            {% endif %}
+            <a href="{{ url_for('login') }}" class="action-btn-outline">
+              {{ icons.login(16) }}<span>Admin Login</span>
+            </a>
+          </div>
+        {% endif %}
           </div>
         </div>
-      </div>
     </header>
 
     <div class="flash-container">
